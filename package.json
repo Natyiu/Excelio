@@ -1,0 +1,34 @@
+{
+  "name": "batman-app",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "lint": "turbo lint",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @Batman/db db:push",
+    "db:push:marketing": "DB_TARGET=marketing turbo -F @Batman/db db:push",
+    "db:studio": "turbo -F @Batman/db db:studio",
+    "db:generate": "turbo -F @Batman/db db:generate",
+    "db:migrate": "turbo -F @Batman/db db:migrate",
+    "db:reset": "turbo -F @Batman/db db:reset"
+  },
+  "dependencies": {
+    "@Batman/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@Batman/config": "workspace:*",
+    "@types/node": "^22.13.14",
+    "turbo": "^2.6.3",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.19.0",
+  "version": "0.1.0"
+}

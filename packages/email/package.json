@@ -1,0 +1,24 @@
+{
+  "name": "@Batman/email",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@Batman/db": "workspace:*",
+    "@Batman/env": "workspace:*",
+    "resend": "^6.9.3"
+  },
+  "devDependencies": {
+    "@Batman/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
