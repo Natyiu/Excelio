@@ -96,13 +96,13 @@ function SectionHeader({
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-1.5">
         <Icon className="h-3 w-3 text-muted-foreground/50" />
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           {title}
         </p>
       </div>
       <Link
         href={href as never}
-        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
       >
         View all
         <ArrowRight className="h-2.5 w-2.5" />
@@ -142,17 +142,17 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Overview</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h1 className="text-[28px] font-bold tracking-tight">Overview</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           A snapshot of your product, right now.
         </p>
       </div>
 
       {/* Row 1: Key metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="border border-border/40 bg-card/50 p-4">
+        <div className="rounded-2xl p-4 bg-muted/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Total Users
             </p>
             <Users className="h-3.5 w-3.5 text-muted-foreground/40" />
@@ -163,14 +163,14 @@ export default function AdminOverviewPage() {
             </p>
             <Sparkline data={signupSpark} />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[12px] text-muted-foreground mt-1">
             +{stats.usersLast7d} this week
           </p>
         </div>
 
-        <div className="border border-border/40 bg-card/50 p-4">
+        <div className="rounded-2xl p-4 bg-muted/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Active Today
             </p>
             <Activity className="h-3.5 w-3.5 text-muted-foreground/40" />
@@ -181,14 +181,14 @@ export default function AdminOverviewPage() {
             </p>
             <Sparkline data={activeSpark} />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[12px] text-muted-foreground mt-1">
             {stats.weeklyActiveUsers} this week
           </p>
         </div>
 
-        <div className="border border-border/40 bg-card/50 p-4">
+        <div className="rounded-2xl p-4 bg-muted/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Onboarding
             </p>
             <CheckCircle className="h-3.5 w-3.5 text-muted-foreground/40" />
@@ -199,16 +199,16 @@ export default function AdminOverviewPage() {
               <p className="text-lg font-bold tracking-tight">
                 {stats.onboardingRate}%
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
                 {stats.onboardedUsers}/{stats.totalUsers}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="border border-border/40 bg-card/50 p-4">
+        <div className="rounded-2xl p-4 bg-muted/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Notifications
             </p>
             <Bell className="h-3.5 w-3.5 text-muted-foreground/40" />
@@ -219,7 +219,7 @@ export default function AdminOverviewPage() {
               <p className="text-lg font-bold tracking-tight">
                 {stats.notificationReadRate}%
               </p>
-              <p className="text-[10px] text-muted-foreground">read rate</p>
+              <p className="text-[12px] text-muted-foreground">read rate</p>
             </div>
           </div>
         </div>
@@ -227,33 +227,33 @@ export default function AdminOverviewPage() {
 
       {/* Row 2: Secondary stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="border border-border/40 bg-card/50 p-3 flex items-center gap-3">
+        <div className="rounded-2xl p-3 flex items-center gap-3 bg-muted/50">
           <UserPlus className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div>
             <p className="text-sm font-bold tracking-tight">
               +{stats.usersLast30d}
             </p>
-            <p className="text-[10px] text-muted-foreground">signups (30d)</p>
+            <p className="text-[12px] text-muted-foreground">signups (30d)</p>
           </div>
         </div>
-        <div className="border border-border/40 bg-card/50 p-3 flex items-center gap-3">
+        <div className="rounded-2xl p-3 flex items-center gap-3 bg-muted/50">
           <Building2 className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div>
             <p className="text-sm font-bold tracking-tight">
               {stats.totalOrgs}
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[12px] text-muted-foreground">
               orgs · {stats.totalMembers} members
             </p>
           </div>
         </div>
-        <div className="border border-border/40 bg-card/50 p-3 flex items-center gap-3">
+        <div className="rounded-2xl p-3 flex items-center gap-3 bg-muted/50">
           <Send className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div>
             <p className="text-sm font-bold tracking-tight">
               {stats.totalNotifications}
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[12px] text-muted-foreground">
               notifications sent
             </p>
           </div>
@@ -263,8 +263,8 @@ export default function AdminOverviewPage() {
       {/* Row 3: Recent users + Recent notifications side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Recent users */}
-        <div className="border border-border/40 bg-card/50">
-          <div className="px-4 py-3 border-b border-border/30">
+        <div className="rounded-2xl bg-muted/50">
+          <div className="px-4 py-3 border-b border-border/60">
             <SectionHeader
               title="Recent Users"
               href="/admin/users"
@@ -273,7 +273,7 @@ export default function AdminOverviewPage() {
           </div>
           <div className="divide-y divide-border/30">
             {recentUsers.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6">
+              <p className="text-sm text-muted-foreground text-center py-6">
                 No users yet
               </p>
             ) : (
@@ -284,25 +284,25 @@ export default function AdminOverviewPage() {
                 >
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={u.image ?? ""} />
-                    <AvatarFallback className="text-[9px] font-bold bg-primary/10 text-primary">
+                    <AvatarFallback className="text-[11px] font-bold bg-primary/10 text-primary">
                       {u.name?.charAt(0).toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium truncate">
+                    <p className="text-[13px] font-medium truncate">
                       {u.name}
                     </p>
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <p className="text-[12px] text-muted-foreground truncate">
                       {u.email}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     {u.role === "admin" && (
-                      <Badge variant="default" className="text-[9px] mb-0.5">
+                      <Badge variant="default" className="text-[11px] mb-0.5">
                         admin
                       </Badge>
                     )}
-                    <p className="text-[9px] text-muted-foreground/50">
+                    <p className="text-[11px] text-muted-foreground/50">
                       {timeAgo(u.createdAt)}
                     </p>
                   </div>
@@ -313,8 +313,8 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Recent notifications */}
-        <div className="border border-border/40 bg-card/50">
-          <div className="px-4 py-3 border-b border-border/30">
+        <div className="rounded-2xl bg-muted/50">
+          <div className="px-4 py-3 border-b border-border/60">
             <SectionHeader
               title="Recent Notifications"
               href="/admin/notifications"
@@ -323,30 +323,30 @@ export default function AdminOverviewPage() {
           </div>
           <div className="divide-y divide-border/30">
             {recentNotifications.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6">
+              <p className="text-sm text-muted-foreground text-center py-6">
                 No notifications sent yet
               </p>
             ) : (
               recentNotifications.map((n) => (
                 <div key={n.id} className="px-4 py-2.5 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium truncate">
+                    <p className="text-[13px] font-medium truncate">
                       {n.title}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <Badge
                         variant="secondary"
-                        className="text-[9px] px-1.5 py-0"
+                        className="text-[11px] px-1.5 py-0"
                       >
                         {n.tag}
                       </Badge>
-                      <span className="text-[9px] text-muted-foreground/50">
+                      <span className="text-[11px] text-muted-foreground/50">
                         → {n.recipientCount} recipient
                         {n.recipientCount !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
-                  <p className="text-[9px] text-muted-foreground/50 shrink-0">
+                  <p className="text-[11px] text-muted-foreground/50 shrink-0">
                     {timeAgo(n.createdAt)}
                   </p>
                 </div>
@@ -363,12 +363,12 @@ export default function AdminOverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Link
           href={"/admin/analytics" as never}
-          className="border border-border/40 bg-card/50 p-3 block hover:bg-muted/20 transition-colors group"
+          className="rounded-2xl p-3 block hover:bg-muted/20 transition-colors group bg-muted/50"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Globe className="h-3 w-3 text-muted-foreground/50" />
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 User Locations
               </p>
             </div>
@@ -378,7 +378,7 @@ export default function AdminOverviewPage() {
         </Link>
 
         <div className="md:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">
+          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">
             Quick Links
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -411,14 +411,14 @@ export default function AdminOverviewPage() {
               <Link
                 key={item.href}
                 href={item.href as never}
-                className="flex items-start gap-2.5 p-3 border border-border/40 hover:bg-muted/30 transition-colors group"
+                className="rounded-2xl flex items-start gap-2.5 p-3 hover:bg-muted/30 transition-colors group bg-muted/50"
               >
                 <item.icon className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[11px] font-medium group-hover:text-foreground transition-colors">
+                  <p className="text-[13px] font-medium group-hover:text-foreground transition-colors">
                     {item.label}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     {item.desc}
                   </p>
                 </div>
@@ -428,8 +428,8 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      <div className="border border-border/40 bg-card/50">
-        <div className="px-4 py-3 border-b border-border/30">
+      <div className="rounded-2xl bg-muted/50">
+        <div className="px-4 py-3 border-b border-border/60">
           <SectionHeader
             title="Feedback"
             href="/admin/feedback"
@@ -437,17 +437,17 @@ export default function AdminOverviewPage() {
           />
         </div>
         {recentFeedback.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-6">
+          <p className="text-sm text-muted-foreground text-center py-6">
             No feedback yet
           </p>
         ) : (
           <>
-            <div className="flex items-center gap-3 px-4 py-2 border-b border-border/20">
-              <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-3 px-4 py-2 border-b border-border/60">
+              <span className="text-[12px] text-muted-foreground">
                 {stats.totalFeedback} total
               </span>
-              <span className="text-[10px] text-muted-foreground">&middot;</span>
-              <span className="text-[10px] font-medium">
+              <span className="text-[12px] text-muted-foreground">&middot;</span>
+              <span className="text-[12px] font-medium">
                 {stats.openFeedback} open
               </span>
             </div>
@@ -466,27 +466,27 @@ export default function AdminOverviewPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-medium truncate">
+                        <span className="text-[12px] font-medium truncate">
                           {f.user?.name ?? "Unknown"}
                         </span>
-                        <span className="text-[9px] bg-foreground/10 text-foreground px-1.5 py-px font-semibold uppercase tracking-wider shrink-0">
+                        <span className="text-[11px] bg-foreground/10 text-foreground px-1.5 py-px font-semibold uppercase tracking-wider shrink-0">
                           {catLabel}
                         </span>
                         <span
                           className={`text-[9px] px-1.5 py-px font-semibold uppercase tracking-wider shrink-0 ${
                             f.status === "open"
-                              ? "bg-foreground text-background"
+                              ? "bg-brand text-brand-foreground"
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {f.status}
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                      <p className="text-[12px] text-muted-foreground truncate mt-0.5">
                         {f.message}
                       </p>
                     </div>
-                    <p className="text-[9px] text-muted-foreground/50 shrink-0">
+                    <p className="text-[11px] text-muted-foreground/50 shrink-0">
                       {timeAgo(f.createdAt)}
                     </p>
                   </div>

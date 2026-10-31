@@ -23,8 +23,20 @@ function resolveConnectionString(): string {
   );
 }
 
-const adapter = new PrismaPg({ connectionString: resolveConnectionString() });
-const prisma = new PrismaClient({ adapter });
+// Supabase's session pooler allows only a handful of clients (15 on this plan), so
+// keep this process's pool small and requests will queue rather than fail.
+const POOL_MAX = Number(process.env.DATABASE_POOL_MAX ?? 5);
+
+function createClient() {
+  const adapter = new PrismaPg({ connectionString: resolveConnectionString(), max: POOL_MAX });
+  return new PrismaClient({ adapter });
+}
+
+// In development, hot reloads re-run this module. Reuse one client across reloads
+// instead of opening a new connection pool each time, which exhausts the pooler.
+const globalForPrisma = globalThis as unknown as { prisma?: ReturnType<typeof createClient> };
+const prisma = globalForPrisma.prisma ?? createClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;
 export { Prisma };

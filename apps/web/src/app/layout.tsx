@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const DEFAULT_TITLE = "Batman — The Dark Knight Boilerplate";
+const DEFAULT_TITLE = "Excelio: Learn Excel by Doing";
 const DEFAULT_DESCRIPTION =
-  "A production-ready full-stack boilerplate forged in the shadows of Gotham. Next.js, Prisma, Better Auth, and more.";
+  "Bite-sized, hands-on Excel lessons in a real spreadsheet. From your first formula to XLOOKUP, dynamic arrays and LAMBDA.";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {

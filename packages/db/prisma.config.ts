@@ -18,6 +18,7 @@ export default defineConfig({
   },
   datasource: {
     // Use process.env so prisma generate works without .env (e.g. fresh clone)
-    url: process.env.DIRECT_URL ?? "postgresql://localhost:5432/placeholder",
+    // Prefer DATABASE_URL (pgbouncer) for broader compatibility
+    url: process.env.DATABASE_URL ?? process.env.DIRECT_URL ?? "postgresql://localhost:5432/placeholder",
   },
 });

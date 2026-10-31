@@ -40,8 +40,8 @@ export default async function VerifyEmailPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border/40">
         <div className="max-w-2xl mx-auto px-4 flex h-12 items-center justify-between">
-          <Link href="/" className="text-[11px] font-semibold tracking-widest uppercase">
-            Batman
+          <Link href="/" className="text-xl font-bold tracking-tight text-brand">
+            Excelio
           </Link>
           <Link
             href="/login"

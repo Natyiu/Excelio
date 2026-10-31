@@ -74,8 +74,8 @@ export default function AdminApiKeysPage() {
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <h1 className="text-lg font-semibold tracking-tight">API Keys</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h1 className="text-[28px] font-bold tracking-tight">API Keys</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Configure third-party service credentials. Stored securely, never
           exposed to users.
         </p>
@@ -85,8 +85,8 @@ export default function AdminApiKeysPage() {
         {/* Supabase */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-semibold">Supabase</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-semibold">Supabase</p>
+            <p className="text-[12px] text-muted-foreground">
               File uploads, avatars, attachments.{" "}
               <a
                 href="https://supabase.com/dashboard"
@@ -131,8 +131,8 @@ export default function AdminApiKeysPage() {
         {/* Resend */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-semibold">Resend</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-semibold">Resend</p>
+            <p className="text-[12px] text-muted-foreground">
               Password reset, email verification, invitations.
             </p>
           </div>
@@ -159,8 +159,8 @@ export default function AdminApiKeysPage() {
         {/* Google */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-semibold">Google OAuth</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-semibold">Google OAuth</p>
+            <p className="text-[12px] text-muted-foreground">
               <a
                 href="https://console.cloud.google.com/apis/credentials"
                 target="_blank"
@@ -170,7 +170,7 @@ export default function AdminApiKeysPage() {
                 Cloud Console
               </a>
               . Redirect URI:{" "}
-              <code className="text-[9px] bg-muted px-1">
+              <code className="text-[11px] bg-muted px-1">
                 {typeof window !== "undefined"
                   ? window.location.origin
                   : ""}
@@ -201,8 +201,8 @@ export default function AdminApiKeysPage() {
         {/* Polar */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-semibold">Polar</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-semibold">Polar</p>
+            <p className="text-[12px] text-muted-foreground">
               Payments, subscriptions, SaaS pricing.{" "}
               <a
                 href={form.polarSandboxMode ? "https://sandbox.polar.sh" : "https://polar.sh/dashboard"}
@@ -213,13 +213,13 @@ export default function AdminApiKeysPage() {
                 {form.polarSandboxMode ? "Sandbox Dashboard" : "Polar Dashboard"}
               </a>{" "}
               → Settings → Access Tokens. Create an Organization Access Token with{" "}
-              <code className="text-[9px] bg-muted px-0.5">products:read</code> and{" "}
-              <code className="text-[9px] bg-muted px-0.5">products:write</code>.
+              <code className="text-[11px] bg-muted px-0.5">products:read</code> and{" "}
+              <code className="text-[11px] bg-muted px-0.5">products:write</code>.
               Use sandbox tokens only with Sandbox mode enabled.
             </p>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-border/40 px-3 py-2">
-            <Label htmlFor="polarSandboxMode" className="text-xs font-medium">
+          <div className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
+            <Label htmlFor="polarSandboxMode" className="text-sm font-medium">
               Sandbox mode
             </Label>
             <Switch
@@ -253,7 +253,7 @@ export default function AdminApiKeysPage() {
             onToggleShow={() => toggleShow("polarWebhookSecret")}
             placeholder="From Polar Dashboard → Webhooks"
           />
-          <p className="text-[9px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Webhook URL:{" "}
             <code className="bg-muted px-0.5">
               {typeof window !== "undefined"
@@ -268,7 +268,7 @@ export default function AdminApiKeysPage() {
         <Separator className="opacity-20" />
 
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             <code className="bg-muted px-0.5">.env</code> values are used as
             fallback.
           </p>
@@ -296,7 +296,7 @@ function PlainInput({
 }) {
   return (
     <div className="space-y-1">
-      <Label htmlFor={id} className="text-[10px] text-muted-foreground">
+      <Label htmlFor={id} className="text-[12px] text-muted-foreground">
         {label}
       </Label>
       <Input
@@ -304,7 +304,7 @@ function PlainInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-8 text-xs"
+        className="h-9 text-sm"
       />
     </div>
   );
@@ -329,7 +329,7 @@ function SecretInput({
 }) {
   return (
     <div className="space-y-1">
-      <Label htmlFor={id} className="text-[10px] text-muted-foreground">
+      <Label htmlFor={id} className="text-[12px] text-muted-foreground">
         {label}
       </Label>
       <div className="relative">
@@ -342,7 +342,7 @@ function SecretInput({
             if (value.includes("••••")) onChange("");
           }}
           placeholder={placeholder}
-          className="h-8 text-xs pr-8 font-mono"
+          className="h-9 text-sm pr-8 font-mono"
         />
         <button
           type="button"

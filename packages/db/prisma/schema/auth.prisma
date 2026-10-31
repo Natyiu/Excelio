@@ -18,6 +18,16 @@ model User {
   sessions            Session[]
   subscription        Subscription?
 
+  // Excel Learning Platform
+  userProfile              UserProfile?
+  lessonProgress           LessonProgress[]
+  challengeAttempts        ChallengeAttempt[]
+  xpTransactions           XpTransaction[]
+  dailyActivities          DailyActivity[]
+  userAchievements         UserAchievement[]
+  skillMasteries           SkillMastery[]
+  dailyChallengeCompletions DailyChallengeCompletion[]
+
   @@map("user")
 }
 

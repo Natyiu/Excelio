@@ -6,7 +6,7 @@ import { Mail01Icon as Mail, Tick01Icon as Check, Cancel01Icon as X } from "@hug
 
 import { authClient } from "@/lib/auth-client";
 
-import { Button } from "@/components/ui/button";
+import { EmptyState, IconTile, PageHeader, Panel, pressable } from "@/components/game-ui";
 import { InvitationsSkeleton } from "@/components/skeletons";
 import type { Invitation } from "@/types/dashboard-invitations";
 
@@ -62,61 +62,51 @@ export default function InvitationsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Invitations</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Pending invitations to join organizations.
-        </p>
-      </div>
+      <PageHeader title="Invitations" description="Pending invitations to join organizations." />
 
       {invitations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border">
-          <Mail className="h-10 w-10 text-muted-foreground/20 mb-4" />
-          <h3 className="text-sm font-medium">No pending invitations</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            You&apos;ll see invitations here when someone invites you to an
-            organization.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Mail className="h-8 w-8" />}
+          title="No pending invitations"
+          description="You'll see invitations here when someone invites you to an organization."
+        />
       ) : (
-        <div className="border border-border divide-y divide-border">
+        <Panel className="overflow-hidden">
           {invitations.map((inv) => (
-            <div key={inv.id} className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold">
-                  {inv.organization.name}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Invited as{" "}
-                  <span className="font-medium">{inv.role}</span> —{" "}
-                  expires{" "}
+            <div key={inv.id} className="flex items-center gap-4 border-b border-border p-4 last:border-b-0">
+              <IconTile tone="sky">
+                <Mail className="h-6 w-6" />
+              </IconTile>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-bold">{inv.organization.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Invited as <span className="font-semibold">{inv.role}</span> · expires{" "}
                   {new Date(inv.expiresAt).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex gap-1.5">
-                <Button
-                  size="sm"
-                  className="h-7 text-xs gap-1"
+              <div className="flex shrink-0 gap-2">
+                <button
+                  className={pressable("brand", "px-3")}
                   onClick={() => handleAccept(inv.id)}
                   disabled={isPending}
+                  aria-label="Accept"
                 >
-                  <Check className="h-2.5 w-2.5" />
-                  Accept
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs gap-1"
+                  <Check className="h-4 w-4" />
+                  <span className="hidden sm:inline">Accept</span>
+                </button>
+                <button
+                  className={pressable("outline", "px-3")}
                   onClick={() => handleReject(inv.id)}
                   disabled={isPending}
+                  aria-label="Decline"
                 >
-                  <X className="h-2.5 w-2.5" />
-                  Decline
-                </Button>
+                  <X className="h-4 w-4" />
+                  <span className="hidden sm:inline">Decline</span>
+                </button>
               </div>
             </div>
           ))}
-        </div>
+        </Panel>
       )}
     </div>
   );

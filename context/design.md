@@ -33,9 +33,13 @@ app/<route>/*.tsx        route-local — only that route uses it (admin-sidebar.
   (light) and `.dark` block — reference them via Tailwind's generated utilities
   (`bg-background`, `text-muted-foreground`, `border-border`), never a raw hex/oklch value in
   a component.
-- `--radius: 0px` — this theme is intentionally sharp-cornered. Don't add `rounded-*` classes
-  that fight it; if a component looks like it needs rounding, check whether the shadcn
-  primitive already handles it via the token.
+- `--radius: 0.875rem` — the theme is soft and rounded (Apple-like). shadcn primitives derive
+  their corners from it; don't reintroduce `rounded-none`.
+- Learner-facing pages (`/dashboard/**`) build on `components/game-ui.tsx`: `Panel` (rounded-3xl
+  card, hairline border, `shadow-soft`), `pressable()` (pill buttons), `ProgressBar`, `IconTile`
+  (tinted rounded square), `PageHeader`, `SectionTitle`, `EmptyState`. Use those instead of
+  hand-rolling cards or buttons so every page stays consistent. Brand colours are the
+  `brand`, `brand-soft` and `brand-deep` tokens.
 
 ## Theme toggle: use `useMounted()`, not a local effect
 

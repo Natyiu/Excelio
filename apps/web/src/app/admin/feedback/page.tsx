@@ -44,7 +44,7 @@ const CATEGORY_STYLES: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  open: "bg-foreground text-background",
+  open: "bg-brand text-brand-foreground",
   reviewed: "bg-foreground/20 text-foreground",
   planned: "bg-foreground/30 text-foreground",
   resolved: "bg-foreground/15 text-foreground/60",
@@ -125,7 +125,7 @@ export default function AdminFeedbackPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-base font-semibold tracking-tight">Feedback</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p className="text-[13px] text-muted-foreground mt-0.5">
           User feedback, feature requests, and bug reports
         </p>
       </div>
@@ -141,9 +141,9 @@ export default function AdminFeedbackPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="border border-border/40 bg-card/50 p-3"
+            className="rounded-2xl p-3 bg-muted/50"
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               {s.label}
             </p>
             <p className="text-lg font-semibold mt-0.5">{s.value}</p>
@@ -155,32 +155,32 @@ export default function AdminFeedbackPage() {
       <div className="flex items-center gap-2">
         <Filter className="h-3 w-3 text-muted-foreground" />
         <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setPage(1); }}>
-          <SelectTrigger className="h-7 text-[11px] w-36">
+          <SelectTrigger className="h-8 text-[13px] w-36">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">All Categories</SelectItem>
+            <SelectItem value="all" className="text-sm">All Categories</SelectItem>
             {FEEDBACK_CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value} className="text-xs">
+              <SelectItem key={c.value} value={c.value} className="text-sm">
                 {c.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setPage(1); }}>
-          <SelectTrigger className="h-7 text-[11px] w-32">
+          <SelectTrigger className="h-8 text-[13px] w-32">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">All Statuses</SelectItem>
+            <SelectItem value="all" className="text-sm">All Statuses</SelectItem>
             {STATUS_OPTIONS.map((s) => (
-              <SelectItem key={s.value} value={s.value} className="text-xs">
+              <SelectItem key={s.value} value={s.value} className="text-sm">
                 {s.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <span className="text-[10px] text-muted-foreground ml-auto">
+        <span className="text-[12px] text-muted-foreground ml-auto">
           {data.total} result{data.total !== 1 ? "s" : ""}
         </span>
       </div>
@@ -189,10 +189,10 @@ export default function AdminFeedbackPage() {
       {data.feedback.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <MessageSquare className="h-6 w-6 text-muted-foreground/30 mb-3" />
-          <p className="text-xs text-muted-foreground">No feedback yet</p>
+          <p className="text-sm text-muted-foreground">No feedback yet</p>
         </div>
       ) : (
-        <div className="border border-border/40 divide-y divide-border/30">
+        <div className="rounded-2xl divide-y divide-border/30 bg-muted/50">
           {data.feedback.map((item) => (
             <FeedbackRow
               key={item.id}
@@ -210,7 +210,7 @@ export default function AdminFeedbackPage() {
       {/* Pagination */}
       {data.pages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             Page {data.currentPage} of {data.pages}
           </p>
           <div className="flex items-center gap-1">
@@ -264,13 +264,13 @@ function FeedbackRow({
         <div className="flex items-start gap-3">
           <Avatar className="h-6 w-6 shrink-0 mt-0.5">
             <AvatarImage src={item.user?.image ?? undefined} />
-            <AvatarFallback className="text-[9px] font-bold bg-primary/10">
+            <AvatarFallback className="text-[11px] font-bold bg-primary/10">
               {item.user?.name?.charAt(0).toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-medium">
+              <span className="text-[13px] font-medium">
                 {item.user?.name ?? "Unknown"}
               </span>
               <span
@@ -283,11 +283,11 @@ function FeedbackRow({
               >
                 {item.status}
               </span>
-              <span className="text-[10px] text-muted-foreground/50 ml-auto shrink-0">
+              <span className="text-[12px] text-muted-foreground/50 ml-auto shrink-0">
                 {timeAgo(item.createdAt)}
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+            <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2">
               {item.message}
             </p>
           </div>
@@ -295,17 +295,17 @@ function FeedbackRow({
       </button>
 
       {expanded && (
-        <div className="px-3 pb-3 pt-0 ml-9 space-y-3 border-t border-border/20 mt-0">
+        <div className="px-3 pb-3 pt-0 ml-9 space-y-3 border-t border-border/60 mt-0">
           <div className="pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1">
               Full Message
             </p>
-            <p className="text-xs text-foreground/80 whitespace-pre-wrap">
+            <p className="text-sm text-foreground/80 whitespace-pre-wrap">
               {item.message}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
+          <div className="flex items-center gap-2 text-[12px] text-muted-foreground/50">
             <span>{item.user?.email}</span>
             <span>&middot;</span>
             <span>
@@ -314,19 +314,19 @@ function FeedbackRow({
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5">
               Admin Note
             </p>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add a note..."
-              className="min-h-[60px] text-xs resize-none"
+              className="min-h-[60px] text-sm resize-none"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Status
             </p>
             <div className="flex items-center gap-1.5 ml-auto">

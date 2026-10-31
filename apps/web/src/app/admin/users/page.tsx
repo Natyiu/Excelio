@@ -386,14 +386,14 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
       <div>
           <h1 className="text-base font-semibold tracking-tight">Users</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             {total} user{total !== 1 ? "s" : ""} &middot; manage roles, access & more
           </p>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="text-[11px] h-7 gap-1.5"
+          className="text-[13px] h-8 gap-1.5"
           onClick={exportUsers}
         >
           <Download className="h-3 w-3" />
@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-            className="pl-8 h-8 text-xs"
+            className="pl-8 h-9 text-sm"
             />
           </div>
         <div className="flex items-center gap-1.5">
@@ -424,13 +424,13 @@ export default function AdminUsersPage() {
               setPage(0);
             }}
           >
-            <SelectTrigger className="h-8 text-[11px] w-28">
+            <SelectTrigger className="h-9 text-[13px] w-28">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-xs">All Roles</SelectItem>
-              <SelectItem value="admin" className="text-xs">Admin</SelectItem>
-              <SelectItem value="user" className="text-xs">User</SelectItem>
+              <SelectItem value="all" className="text-sm">All Roles</SelectItem>
+              <SelectItem value="admin" className="text-sm">Admin</SelectItem>
+              <SelectItem value="user" className="text-sm">User</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -440,13 +440,13 @@ export default function AdminUsersPage() {
               setPage(0);
             }}
           >
-            <SelectTrigger className="h-8 text-[11px] w-28">
+            <SelectTrigger className="h-9 text-[13px] w-28">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-xs">All Status</SelectItem>
-              <SelectItem value="active" className="text-xs">Active</SelectItem>
-              <SelectItem value="banned" className="text-xs">Banned</SelectItem>
+              <SelectItem value="all" className="text-sm">All Status</SelectItem>
+              <SelectItem value="active" className="text-sm">Active</SelectItem>
+              <SelectItem value="banned" className="text-sm">Banned</SelectItem>
             </SelectContent>
           </Select>
           {filtersActive && (
@@ -467,15 +467,15 @@ export default function AdminUsersPage() {
 
       {/* Bulk actions bar */}
       {someSelected && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 border border-border/40">
-          <span className="text-[11px] font-medium">
+        <div className="rounded-2xl flex items-center gap-2 px-3 py-2 bg-muted/50 bg-muted/50">
+          <span className="text-[13px] font-medium">
             {selected.size} selected
           </span>
           <div className="h-3 w-px bg-border mx-1" />
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] gap-1"
+            className="h-6 text-[12px] gap-1"
             onClick={() => setBulkAction("role")}
           >
             <Shield className="h-3 w-3" /> Set Role
@@ -483,7 +483,7 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] gap-1"
+            className="h-6 text-[12px] gap-1"
             onClick={() => setBulkAction("ban")}
           >
             <Ban className="h-3 w-3" /> Ban
@@ -491,7 +491,7 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] gap-1"
+            className="h-6 text-[12px] gap-1"
             onClick={() => setBulkAction("unban")}
           >
             <UserCheck className="h-3 w-3" /> Unban
@@ -499,7 +499,7 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] gap-1 text-destructive hover:text-destructive"
+            className="h-6 text-[12px] gap-1 text-destructive hover:text-destructive"
             onClick={() => setBulkAction("remove")}
           >
             <UserX className="h-3 w-3" /> Remove
@@ -508,7 +508,7 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px]"
+            className="h-6 text-[12px]"
             onClick={() => setSelected(new Set())}
           >
             Clear
@@ -517,7 +517,7 @@ export default function AdminUsersPage() {
       )}
 
       {/* Table */}
-          <div className="border border-border/30 overflow-hidden">
+          <div className="rounded-2xl overflow-hidden bg-muted/50">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -530,7 +530,7 @@ export default function AdminUsersPage() {
               </TableHead>
               <TableHead>
                 <button
-                  className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
                   onClick={() => handleSort("name")}
                 >
                   User
@@ -539,26 +539,26 @@ export default function AdminUsersPage() {
                   </TableHead>
               <TableHead>
                 <button
-                  className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
                   onClick={() => handleSort("role")}
                 >
                   Role
                   <ArrowUpDown className="h-2.5 w-2.5" />
                 </button>
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">
+                  <TableHead className="text-[12px] font-semibold uppercase tracking-wider">
                     Status
                   </TableHead>
               <TableHead>
                 <button
-                  className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wider hover:text-foreground transition-colors"
                   onClick={() => handleSort("createdAt")}
                 >
                   Joined
                   <ArrowUpDown className="h-2.5 w-2.5" />
                 </button>
               </TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-right">
+                  <TableHead className="text-[12px] font-semibold uppercase tracking-wider text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -588,7 +588,7 @@ export default function AdminUsersPage() {
                 ) : users.length === 0 ? (
                   <TableRow>
                 <TableCell colSpan={6} className="text-center py-12">
-                  <p className="text-xs text-muted-foreground">No users found</p>
+                  <p className="text-sm text-muted-foreground">No users found</p>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -625,7 +625,7 @@ export default function AdminUsersPage() {
       {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
             Page {page + 1} of {totalPages} &middot; {total} total
               </p>
               <div className="flex gap-1">
@@ -656,24 +656,24 @@ export default function AdminUsersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-sm">Edit User</DialogTitle>
-            <DialogDescription className="text-[11px]">
+            <DialogDescription className="text-[13px]">
               Update details for {editUser?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <Label htmlFor="edit-name" className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 Name
               </Label>
               <Input
                 id="edit-name"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-email" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <Label htmlFor="edit-email" className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 Email
               </Label>
               <Input
@@ -681,11 +681,11 @@ export default function AdminUsersPage() {
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-password" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <Label htmlFor="edit-password" className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 New Password
               </Label>
               <Input
@@ -694,15 +694,15 @@ export default function AdminUsersPage() {
                 value={editPassword}
                 onChange={(e) => setEditPassword(e.target.value)}
                 placeholder="Leave blank to keep current"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => setEditUser(null)}>
+            <Button variant="outline" size="sm" className="text-sm" onClick={() => setEditUser(null)}>
               Cancel
             </Button>
-            <Button size="sm" className="text-xs" onClick={handleEditSave} disabled={editSaving}>
+            <Button size="sm" className="text-sm" onClick={handleEditSave} disabled={editSaving}>
               {editSaving ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
@@ -714,26 +714,26 @@ export default function AdminUsersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-sm">Change Role</DialogTitle>
-            <DialogDescription className="text-[11px]">
+            <DialogDescription className="text-[13px]">
               Set the role for {roleTarget?.name} ({roleTarget?.email})
             </DialogDescription>
           </DialogHeader>
           <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="user" className="text-xs">User</SelectItem>
-              <SelectItem value="admin" className="text-xs">Admin</SelectItem>
+              <SelectItem value="user" className="text-sm">User</SelectItem>
+              <SelectItem value="admin" className="text-sm">Admin</SelectItem>
             </SelectContent>
           </Select>
           <DialogFooter>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => setRoleTarget(null)}>
+            <Button variant="outline" size="sm" className="text-sm" onClick={() => setRoleTarget(null)}>
               Cancel
             </Button>
             <Button
               size="sm"
-              className="text-xs"
+              className="text-sm"
               onClick={() => roleTarget && handleSetRole(roleTarget.id, selectedRole)}
             >
               Save Role
@@ -747,44 +747,44 @@ export default function AdminUsersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-sm">Ban User</DialogTitle>
-            <DialogDescription className="text-[11px]">
+            <DialogDescription className="text-[13px]">
               Ban {banTarget?.name} ({banTarget?.email}). They will be signed out immediately.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <Label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 Reason
               </Label>
               <Textarea
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 placeholder="Reason for ban (optional)"
-                className="min-h-[60px] text-xs resize-none"
+                className="min-h-[60px] text-sm resize-none"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <Label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 Expires (optional)
               </Label>
               <Input
                 type="datetime-local"
                 value={banExpiry}
                 onChange={(e) => setBanExpiry(e.target.value)}
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
                 Leave empty for permanent ban
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => setBanTarget(null)}>
+            <Button variant="outline" size="sm" className="text-sm" onClick={() => setBanTarget(null)}>
               Cancel
             </Button>
             <Button
               size="sm"
-              className="text-xs"
+              className="text-sm"
               onClick={() => banTarget && handleBan(banTarget.id, banReason, banExpiry || undefined)}
             >
               Ban User
@@ -798,7 +798,7 @@ export default function AdminUsersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove User</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               Permanently delete <strong>{removeTarget?.name}</strong> ({removeTarget?.email}) and all their data. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -816,19 +816,19 @@ export default function AdminUsersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Ban {selected.size} User{selected.size > 1 ? "s" : ""}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               The selected users will be signed out and unable to log in.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <Label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Reason (optional)
             </Label>
             <Textarea
               value={bulkBanReason}
               onChange={(e) => setBulkBanReason(e.target.value)}
               placeholder="Reason for ban..."
-              className="min-h-[60px] text-xs resize-none mt-1.5"
+              className="min-h-[60px] text-sm resize-none mt-1.5"
             />
           </div>
           <AlertDialogFooter>
@@ -844,7 +844,7 @@ export default function AdminUsersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unban {selected.size} User{selected.size > 1 ? "s" : ""}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               The selected users will be able to sign in again.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -861,18 +861,18 @@ export default function AdminUsersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Set Role for {selected.size} User{selected.size > 1 ? "s" : ""}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               Change the role for all selected users.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
             <Select value={bulkRole} onValueChange={setBulkRole}>
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-9 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user" className="text-xs">User</SelectItem>
-                <SelectItem value="admin" className="text-xs">Admin</SelectItem>
+                <SelectItem value="user" className="text-sm">User</SelectItem>
+                <SelectItem value="admin" className="text-sm">Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -889,14 +889,14 @@ export default function AdminUsersPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {selected.size} User{selected.size > 1 ? "s" : ""}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               Permanently delete {selected.size} user{selected.size > 1 ? "s" : ""} and all their data. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {selectedUsers.length <= 10 && (
             <div className="py-1 space-y-1">
               {selectedUsers.map((u) => (
-                <p key={u.id} className="text-[11px] text-muted-foreground">
+                <p key={u.id} className="text-[13px] text-muted-foreground">
                   {u.name} ({u.email})
                 </p>
               ))}
@@ -946,14 +946,14 @@ function UserRow({
         <div className="flex items-center gap-2.5">
           <Avatar className="h-7 w-7">
             <AvatarImage src={user.image ?? ""} />
-            <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
+            <AvatarFallback className="text-[12px] font-bold bg-primary/10 text-primary">
               {user.name?.charAt(0).toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium truncate">{user.name}</p>
+            <p className="text-[13px] font-medium truncate">{user.name}</p>
             <div className="flex items-center gap-1">
-              <p className="text-[10px] text-muted-foreground truncate">
+              <p className="text-[12px] text-muted-foreground truncate">
                 {user.email}
               </p>
               {user.emailVerified && (
@@ -966,7 +966,7 @@ function UserRow({
       <TableCell>
         <Badge
           variant={user.role === "admin" ? "default" : "secondary"}
-          className="text-[9px]"
+          className="text-[11px]"
         >
           {user.role ?? "user"}
         </Badge>
@@ -974,19 +974,19 @@ function UserRow({
       <TableCell>
         {user.banned ? (
           <div>
-            <Badge variant="destructive" className="text-[9px]">Banned</Badge>
+            <Badge variant="destructive" className="text-[11px]">Banned</Badge>
             {user.banReason && (
-              <p className="text-[9px] text-muted-foreground mt-0.5 truncate max-w-[120px]">
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[120px]">
                 {user.banReason}
               </p>
             )}
           </div>
         ) : (
-          <Badge variant="secondary" className="text-[9px]">Active</Badge>
+          <Badge variant="secondary" className="text-[11px]">Active</Badge>
         )}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-[12px] text-muted-foreground">
           <Calendar className="h-2.5 w-2.5" />
           {new Date(user.createdAt).toLocaleDateString("en-US", {
             month: "short",
@@ -1001,31 +1001,31 @@ function UserRow({
             <div
               role="button"
               tabIndex={0}
-              className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-muted cursor-pointer"
+              className="inline-flex items-center justify-center h-7 w-7 rounded-xl hover:bg-muted cursor-pointer"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem className="text-xs gap-2" onClick={onEdit}>
+            <DropdownMenuItem className="text-sm gap-2" onClick={onEdit}>
               <Pencil className="h-3 w-3" /> Edit Details
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={onRole}>
+            <DropdownMenuItem className="text-sm gap-2" onClick={onRole}>
               <Shield className="h-3 w-3" /> Change Role
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {user.banned ? (
-              <DropdownMenuItem className="text-xs gap-2" onClick={onUnban}>
+              <DropdownMenuItem className="text-sm gap-2" onClick={onUnban}>
                 <UserCheck className="h-3 w-3" /> Unban
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem className="text-xs gap-2" onClick={onBan}>
+              <DropdownMenuItem className="text-sm gap-2" onClick={onBan}>
                 <Ban className="h-3 w-3" /> Ban User
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-xs gap-2 text-destructive focus:text-destructive"
+              className="text-sm gap-2 text-destructive focus:text-destructive"
               onClick={onRemove}
             >
               <UserX className="h-3 w-3" /> Remove User

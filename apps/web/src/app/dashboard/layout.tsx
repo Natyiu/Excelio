@@ -2,8 +2,8 @@ import { auth } from "@Batman/auth";
 import prisma from "@Batman/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { DashboardShell } from "@/components/dashboard-shell";
+import { ExcelDashboardShell } from "@/components/excel-dashboard-shell";
+import { getDashboardStats, getLeaderboard } from "@/lib/actions/excel-learning";
 
 export default async function DashboardLayout({
   children,
@@ -29,35 +29,56 @@ export default async function DashboardLayout({
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { onboardingCompleted: true, emailVerified: true },
+    select: { emailVerified: true },
   });
 
-  if (
-    settings.maintenanceMode &&
-    (session.user.role as string) !== "admin"
-  ) {
+  if (settings.maintenanceMode && (session.user.role as string) !== "admin") {
     redirect("/maintenance" as never);
   }
 
-  if (
-    settings.emailVerificationEnabled &&
-    user &&
-    !user.emailVerified
-  ) {
+  if (settings.emailVerificationEnabled && user && !user.emailVerified) {
     redirect("/verify-email" as never);
   }
 
-  if (user && !user.onboardingCompleted && settings.onboardingEnabled) {
-    redirect("/onboarding" as never);
+
+  // Fetch dashboard stats for sidebar
+  let stats;
+  try {
+    stats = await getDashboardStats();
+  } catch {
+    stats = null;
   }
 
-  const unreadCount = await prisma.notificationRecipient.count({
-    where: { userId: session.user.id, read: false },
-  });
+  // This week's top three (and you, if you're further down) for the rail.
+  const board = await getLeaderboard("weekly").catch(() => []);
+  const me = board.find((e) => e.isCurrentUser);
+  const leaders = [...board.slice(0, 3), ...(me && me.rank > 3 ? [me] : [])].map((e) => ({
+    rank: e.rank,
+    name: e.displayName,
+    avatarUrl: e.avatarUrl,
+    xp: e.xp,
+    isMe: e.isCurrentUser,
+  }));
+
+  // Unread count for the Notifications badge in the sidebar.
+  const unreadNotifications = await prisma.notificationRecipient
+    .count({ where: { userId: session.user.id, read: false } })
+    .catch(() => 0);
 
   return (
-    <DashboardShell session={session} unreadNotifications={unreadCount}>
+    <ExcelDashboardShell
+      session={session}
+      unreadNotifications={unreadNotifications}
+      leaders={leaders}
+      stats={stats ? {
+        totalXp: stats.totalXp,
+        currentStreak: stats.currentStreak,
+        todayXp: stats.todayXp,
+        todayMinutes: stats.todayMinutes,
+        dailyGoalMinutes: stats.dailyGoalMinutes,
+      } : undefined}
+    >
       {children}
-    </DashboardShell>
+    </ExcelDashboardShell>
   );
 }

@@ -51,12 +51,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border/40 bg-card/50">
-      <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
+    <div className="rounded-2xl bg-muted/50">
+      <div className="px-4 py-3 border-b border-border/60 flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-muted-foreground/50" />
         <div>
-          <p className="text-xs font-semibold">{title}</p>
-          <p className="text-[10px] text-muted-foreground">{description}</p>
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-[12px] text-muted-foreground">{description}</p>
         </div>
       </div>
       <div className="p-4 space-y-4">{children}</div>
@@ -76,9 +76,9 @@ function FieldRow({
   return (
     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 items-start">
       <div className="pt-1.5">
-        <Label className="text-[11px] font-medium">{label}</Label>
+        <Label className="text-[13px] font-medium">{label}</Label>
         {hint && (
-          <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5">{hint}</p>
         )}
       </div>
       <div>{children}</div>
@@ -105,7 +105,7 @@ function ToggleRow({
         <p className={`text-[11px] font-medium ${danger ? "text-destructive" : ""}`}>
           {label}
         </p>
-        <p className="text-[10px] text-muted-foreground">{hint}</p>
+        <p className="text-[12px] text-muted-foreground">{hint}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>
@@ -241,7 +241,7 @@ export default function AdminGeneralPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-base font-semibold tracking-tight">General</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             Core application settings and configuration
           </p>
         </div>
@@ -249,7 +249,7 @@ export default function AdminGeneralPage() {
           onClick={handleSave}
           disabled={saving}
           size="sm"
-          className="text-xs h-7"
+          className="text-sm h-8"
         >
           {saving ? "Saving..." : "Save Changes"}
         </Button>
@@ -266,7 +266,7 @@ export default function AdminGeneralPage() {
             value={s.appName}
             onChange={(e) => update("appName", e.target.value)}
             placeholder="My App"
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           />
         </FieldRow>
         <FieldRow label="Description" hint="Short tagline for your app">
@@ -274,7 +274,7 @@ export default function AdminGeneralPage() {
             value={s.appDescription}
             onChange={(e) => update("appDescription", e.target.value)}
             placeholder="A brief description of your product"
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           />
         </FieldRow>
       </SectionCard>
@@ -293,7 +293,7 @@ export default function AdminGeneralPage() {
             value={s.metaTitle}
             onChange={(e) => update("metaTitle", e.target.value)}
             placeholder={s.appName || "My App"}
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           />
         </FieldRow>
         <FieldRow
@@ -304,7 +304,7 @@ export default function AdminGeneralPage() {
             value={s.metaDescription}
             onChange={(e) => update("metaDescription", e.target.value)}
             placeholder={s.appDescription || "A brief description of your product"}
-            className="min-h-[60px] text-xs resize-none"
+            className="min-h-[60px] text-sm resize-none"
           />
         </FieldRow>
         <FieldRow
@@ -316,7 +316,7 @@ export default function AdminGeneralPage() {
               type="button"
               onClick={() => ogImageInputRef.current?.click()}
               disabled={ogImageUploading}
-              className="flex items-center gap-2 h-8 px-3 rounded-md border border-input bg-background text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 h-9 px-3 rounded-xl border border-input bg-background text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
             >
               {ogImageUploading ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -334,7 +334,7 @@ export default function AdminGeneralPage() {
             />
             {s.ogImage && (
               <>
-                <div className="relative w-16 h-16 rounded overflow-hidden border border-border/40 shrink-0">
+                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border shrink-0">
                   <img
                     src={s.ogImage}
                     alt="Social preview"
@@ -345,7 +345,7 @@ export default function AdminGeneralPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                  className="h-8 text-sm text-muted-foreground hover:text-destructive"
                   onClick={() => update("ogImage", "")}
                 >
                   <X className="h-3 w-3 mr-1" />
@@ -369,7 +369,7 @@ export default function AdminGeneralPage() {
           checked={s.signupsEnabled}
           onCheckedChange={(v) => handleToggle("signupsEnabled", v)}
         />
-        <div className="border-t border-border/20 pt-3">
+        <div className="border-t border-border/60 pt-3">
           <FieldRow
             label="Default User Role"
             hint="Role assigned to new users on signup"
@@ -378,17 +378,17 @@ export default function AdminGeneralPage() {
               value={s.defaultUserRole}
               onValueChange={(v) => update("defaultUserRole", v)}
             >
-              <SelectTrigger className="h-8 text-xs w-40">
+              <SelectTrigger className="h-9 text-sm w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user" className="text-xs">User</SelectItem>
-                <SelectItem value="admin" className="text-xs">Admin</SelectItem>
+                <SelectItem value="user" className="text-sm">User</SelectItem>
+                <SelectItem value="admin" className="text-sm">Admin</SelectItem>
               </SelectContent>
             </Select>
           </FieldRow>
         </div>
-        <div className="border-t border-border/20 pt-3">
+        <div className="border-t border-border/60 pt-3">
           <FieldRow
             label="Session Timeout"
             hint="Days before an inactive session expires"
@@ -400,9 +400,9 @@ export default function AdminGeneralPage() {
                 onChange={(e) => update("sessionTimeout", parseInt(e.target.value) || 1)}
                 min={1}
                 max={365}
-                className="h-8 text-xs w-24"
+                className="h-9 text-sm w-24"
               />
-              <span className="text-[10px] text-muted-foreground">days</span>
+              <span className="text-[12px] text-muted-foreground">days</span>
             </div>
           </FieldRow>
         </div>
@@ -421,14 +421,14 @@ export default function AdminGeneralPage() {
           onCheckedChange={(v) => handleToggle("maxUsersEnabled", v)}
         />
         {s.maxUsersEnabled && (
-          <div className="border-t border-border/20 pt-3">
+          <div className="border-t border-border/60 pt-3">
             <FieldRow label="Max Users" hint="Registration closes when this limit is reached">
               <Input
                 type="number"
                 value={s.maxUsers}
                 onChange={(e) => update("maxUsers", parseInt(e.target.value) || 0)}
                 min={0}
-                className="h-8 text-xs w-32"
+                className="h-9 text-sm w-32"
               />
             </FieldRow>
           </div>
@@ -449,13 +449,13 @@ export default function AdminGeneralPage() {
           danger
         />
         {s.maintenanceMode && (
-          <div className="border-t border-border/20 pt-3">
+          <div className="border-t border-border/60 pt-3">
             <FieldRow label="Message" hint="Shown to users during maintenance">
               <Textarea
                 value={s.maintenanceMessage}
                 onChange={(e) => update("maintenanceMessage", e.target.value)}
                 placeholder="We're performing scheduled maintenance..."
-                className="min-h-[60px] text-xs resize-none"
+                className="min-h-[60px] text-sm resize-none"
               />
             </FieldRow>
           </div>
@@ -474,19 +474,19 @@ export default function AdminGeneralPage() {
             onChange={(e) => update("supportEmail", e.target.value)}
             placeholder="support@yourapp.com"
             type="email"
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           />
         </FieldRow>
-        <div className="border-t border-border/20 pt-3 space-y-2">
+        <div className="border-t border-border/60 pt-3 space-y-2">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] font-medium">Privacy Policy</p>
-              <p className="text-[10px] text-muted-foreground">Shown at /legal/privacy</p>
+              <p className="text-[13px] font-medium">Privacy Policy</p>
+              <p className="text-[12px] text-muted-foreground">Shown at /legal/privacy</p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-[11px] gap-1.5"
+              className="h-8 text-[13px] gap-1.5"
               onClick={() => setLegalModal("privacy")}
             >
               <Pencil className="h-3 w-3" />
@@ -495,13 +495,13 @@ export default function AdminGeneralPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] font-medium">Terms of Service</p>
-              <p className="text-[10px] text-muted-foreground">Shown at /legal/terms</p>
+              <p className="text-[13px] font-medium">Terms of Service</p>
+              <p className="text-[12px] text-muted-foreground">Shown at /legal/terms</p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-[11px] gap-1.5"
+              className="h-8 text-[13px] gap-1.5"
               onClick={() => setLegalModal("terms")}
             >
               <Pencil className="h-3 w-3" />
@@ -522,10 +522,10 @@ export default function AdminGeneralPage() {
               value={s.privacyContent}
               onChange={(e) => update("privacyContent", e.target.value)}
               placeholder={`# Privacy Policy\n\nWrite your privacy policy in **markdown**...\n\n- Bullet points\n- [Links](https://example.com)`}
-              className="min-h-[280px] text-xs font-mono resize-y"
+              className="min-h-[280px] text-sm font-mono resize-y"
             />
           </div>
-          <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-border/30 px-4 py-3">
+          <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-border/60 px-4 py-3">
             <Button variant="ghost" size="sm" onClick={() => setLegalModal(null)}>
               Cancel
             </Button>
@@ -545,10 +545,10 @@ export default function AdminGeneralPage() {
               value={s.termsContent}
               onChange={(e) => update("termsContent", e.target.value)}
               placeholder={`# Terms of Service\n\nWrite your terms in **markdown**...\n\n- Bullet points\n- [Links](https://example.com)`}
-              className="min-h-[280px] text-xs font-mono resize-y"
+              className="min-h-[280px] text-sm font-mono resize-y"
             />
           </div>
-          <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-border/30 px-4 py-3">
+          <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-border/60 px-4 py-3">
             <Button variant="ghost" size="sm" onClick={() => setLegalModal(null)}>
               Cancel
             </Button>
@@ -564,7 +564,7 @@ export default function AdminGeneralPage() {
           onClick={handleSave}
           disabled={saving}
           size="sm"
-          className="text-xs h-7"
+          className="text-sm h-8"
         >
           {saving ? "Saving..." : "Save All Changes"}
         </Button>

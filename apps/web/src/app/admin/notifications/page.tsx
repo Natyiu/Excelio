@@ -183,13 +183,13 @@ export default function AdminNotificationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-base font-semibold tracking-tight">Notifications</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             Compose and send messages to your users.
           </p>
         </div>
         <Button
           size="sm"
-          className="h-8 text-xs gap-1.5"
+          className="h-9 text-sm gap-1.5"
           onClick={() => setCreateOpen(true)}
         >
           <Plus className="h-3 w-3" />
@@ -207,7 +207,7 @@ export default function AdminNotificationsPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="notif-title" className="text-[11px] font-medium">
+                <Label htmlFor="notif-title" className="text-[13px] font-medium">
                   Title
                 </Label>
                 <Input
@@ -215,20 +215,20 @@ export default function AdminNotificationsPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Notification title..."
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="notif-tag" className="text-[11px] font-medium">
+                <Label htmlFor="notif-tag" className="text-[13px] font-medium">
                   Tag
                 </Label>
                 <Select value={tag} onValueChange={setTag}>
-                  <SelectTrigger id="notif-tag" className="h-8 text-xs">
+                  <SelectTrigger id="notif-tag" className="h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {NOTIFICATION_TAGS.map((t) => (
-                      <SelectItem key={t} value={t} className="text-xs">
+                      <SelectItem key={t} value={t} className="text-sm">
                         <span className="capitalize">{t}</span>
                       </SelectItem>
                     ))}
@@ -238,7 +238,7 @@ export default function AdminNotificationsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="notif-desc" className="text-[11px] font-medium">
+              <Label htmlFor="notif-desc" className="text-[13px] font-medium">
                 Description
               </Label>
               <Textarea
@@ -247,36 +247,36 @@ export default function AdminNotificationsPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Write the notification body..."
                 rows={4}
-                className="text-xs resize-none"
+                className="text-sm resize-none"
               />
             </div>
 
             {/* Attachment */}
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-medium">
+              <Label className="text-[13px] font-medium">
                 Attachment (optional)
               </Label>
               {attachment ? (
-                <div className="flex items-center gap-2 border border-input rounded-md p-2.5 bg-muted/20">
+                <div className="flex items-center gap-2 border border-input rounded-xl p-2.5 bg-muted/20">
                   <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs truncate flex-1">
+                  <span className="text-sm truncate flex-1">
                     {attachment.name}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[12px] text-muted-foreground">
                     {(attachment.size / 1024).toFixed(1)} KB
                   </span>
                   <button
                     type="button"
                     onClick={() => setAttachment(null)}
-                    className="p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded"
+                    className="p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-2 border border-dashed border-input rounded-md p-3 cursor-pointer hover:bg-muted/30 transition-colors">
+                <label className="flex items-center gap-2 border border-dashed border-input rounded-xl p-3 cursor-pointer hover:bg-muted/30 transition-colors">
                   <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Click to attach a file
                   </span>
                   <input
@@ -301,21 +301,21 @@ export default function AdminNotificationsPage() {
                 />
                 <Label
                   htmlFor="send-to-all"
-                  className="text-[11px] font-medium cursor-pointer"
+                  className="text-[13px] font-medium cursor-pointer"
                 >
                   Send to all users
                 </Label>
               </div>
 
               {!sendToAll && (
-                <div className="border border-border/40 rounded-md overflow-hidden">
-                  <div className="p-2 border-b border-border/30 relative">
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-2 border-b border-border/60 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input
                       value={userSearch}
                       onChange={(e) => setUserSearch(e.target.value)}
                       placeholder="Search users by name or email..."
-                      className="h-8 text-xs pl-8"
+                      className="h-9 text-sm pl-8"
                     />
                     {userSearching && (
                       <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground animate-spin" />
@@ -332,24 +332,24 @@ export default function AdminNotificationsPage() {
                           onCheckedChange={() => toggleUser(u.id)}
                         />
                         <div className="min-w-0">
-                          <p className="text-xs font-medium truncate">
+                          <p className="text-sm font-medium truncate">
                             {u.name ?? "Unnamed"}
                           </p>
-                          <p className="text-[10px] text-muted-foreground truncate">
+                          <p className="text-[12px] text-muted-foreground truncate">
                             {u.email}
                           </p>
                         </div>
                       </label>
                     ))}
                     {filteredUsers.length === 0 && !userSearching && (
-                      <p className="p-3 text-xs text-muted-foreground text-center">
+                      <p className="p-3 text-sm text-muted-foreground text-center">
                         {userSearch ? "No users found" : "Type to search users..."}
                       </p>
                     )}
                   </div>
                   {selectedUsers.length > 0 && (
-                    <div className="p-2 border-t border-border/30 bg-muted/30">
-                      <p className="text-[10px] text-muted-foreground">
+                    <div className="p-2 border-t border-border/60 bg-muted/30">
+                      <p className="text-[12px] text-muted-foreground">
                         {selectedUsers.length} user
                         {selectedUsers.length !== 1 ? "s" : ""} selected
                       </p>
@@ -365,7 +365,7 @@ export default function AdminNotificationsPage() {
               onClick={handleSend}
               disabled={isPending}
               size="sm"
-              className="h-8 text-xs gap-1.5"
+              className="h-9 text-sm gap-1.5"
             >
               <Send className="h-3 w-3" />
               {isPending ? "Sending..." : "Send Notification"}
@@ -375,12 +375,12 @@ export default function AdminNotificationsPage() {
       </Dialog>
 
       {/* History section */}
-      <div className="border border-border/40 bg-card/50">
-        <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
+      <div className="rounded-2xl bg-muted/50">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center gap-2">
           <Clock className="h-3.5 w-3.5 text-muted-foreground/50" />
           <div>
-            <p className="text-xs font-semibold">Sent History</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-semibold">Sent History</p>
+            <p className="text-[12px] text-muted-foreground">
               {historyTotal} notification{historyTotal !== 1 ? "s" : ""} sent
             </p>
           </div>
@@ -389,7 +389,7 @@ export default function AdminNotificationsPage() {
         {history.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Send className="h-8 w-8 text-muted-foreground/20 mb-3" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               No notifications sent yet
             </p>
           </div>
@@ -401,7 +401,7 @@ export default function AdminNotificationsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xs font-semibold truncate">
+                        <h3 className="text-sm font-semibold truncate">
                           {item.title}
                         </h3>
                         <span
@@ -410,28 +410,28 @@ export default function AdminNotificationsPage() {
                           {item.tag}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
+                      <p className="text-[13px] text-muted-foreground line-clamp-2">
                         {item.description}
                       </p>
                       {item.attachmentName && (
                         <div className="flex items-center gap-1 mt-1.5">
                           <Paperclip className="h-2.5 w-2.5 text-muted-foreground" />
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[12px] text-muted-foreground">
                             {item.attachmentName}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="text-right shrink-0 space-y-1">
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[12px] text-muted-foreground">
                         {new Date(item.createdAt).toLocaleDateString()}
                       </p>
                       <div className="flex items-center gap-2 justify-end">
-                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-0.5 text-[12px] text-muted-foreground">
                           <Users className="h-2.5 w-2.5" />
                           {item.recipientCount}
                         </span>
-                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-0.5 text-[12px] text-muted-foreground">
                           <Eye className="h-2.5 w-2.5" />
                           {item.readCount}
                         </span>
@@ -443,8 +443,8 @@ export default function AdminNotificationsPage() {
             </div>
 
             {historyPages > 1 && (
-              <div className="border-t border-border/30 px-4 py-2.5 flex items-center justify-between">
-                <p className="text-[10px] text-muted-foreground">
+              <div className="border-t border-border/60 px-4 py-2.5 flex items-center justify-between">
+                <p className="text-[12px] text-muted-foreground">
                   Page {historyPage} of {historyPages}
                 </p>
                 <div className="flex gap-1">

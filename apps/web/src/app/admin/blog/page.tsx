@@ -230,15 +230,15 @@ export default function AdminBlogPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Blog</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-[28px] font-bold tracking-tight">Blog</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Write SEO-friendly blog posts for your site.
           </p>
         </div>
         <Button
           size="sm"
           onClick={openCreate}
-          className="text-xs h-8 gap-1.5 bg-foreground text-background hover:bg-foreground/90"
+          className="text-sm h-9 gap-1.5 rounded-full bg-brand text-brand-foreground shadow-[0_3px_0_var(--brand-deep)] hover:bg-brand hover:brightness-110"
         >
           <Plus className="h-3 w-3" />
           New Post
@@ -246,7 +246,7 @@ export default function AdminBlogPage() {
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground">Status:</span>
+        <span className="text-[12px] text-muted-foreground">Status:</span>
         <div className="flex gap-1">
           {(["all", true, false] as const).map((v) => (
             <button
@@ -267,18 +267,18 @@ export default function AdminBlogPage() {
         </div>
       </div>
 
-      <div className="border border-border/40">
+      <div className="rounded-2xl bg-muted/50">
         {!data?.posts.length ? (
           <div className="px-6 py-12 text-center">
             <FileText className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-xs text-muted-foreground">No posts yet.</p>
-            <p className="text-[10px] text-muted-foreground/50 mt-1">
+            <p className="text-sm text-muted-foreground">No posts yet.</p>
+            <p className="text-[12px] text-muted-foreground/50 mt-1">
               Create your first blog post to get started.
             </p>
             <Button
               size="sm"
               variant="outline"
-              className="mt-4 text-xs h-8"
+              className="mt-4 text-sm h-9"
               onClick={openCreate}
             >
               New Post
@@ -293,20 +293,20 @@ export default function AdminBlogPage() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium truncate">
+                    <span className="text-sm font-medium truncate">
                       {post.title}
                     </span>
                     {post.published ? (
-                      <span className="text-[9px] text-green-500/80 shrink-0">
+                      <span className="text-[11px] text-green-500/80 shrink-0">
                         Published
                       </span>
                     ) : (
-                      <span className="text-[9px] text-muted-foreground shrink-0">
+                      <span className="text-[11px] text-muted-foreground shrink-0">
                         Draft
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground/50">
+                  <div className="flex items-center gap-2 mt-0.5 text-[12px] text-muted-foreground/50">
                     <span>/blog/{post.slug}</span>
                     <span>·</span>
                     <span>
@@ -351,14 +351,14 @@ export default function AdminBlogPage() {
 
       {data && data.pages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             Page {data.currentPage} of {data.pages} · {data.total} total
           </p>
           <div className="flex gap-1">
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs h-7"
+              className="text-sm h-8"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
@@ -367,7 +367,7 @@ export default function AdminBlogPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs h-7"
+              className="text-sm h-8"
               disabled={page >= data.pages}
               onClick={() => setPage((p) => p + 1)}
             >
@@ -389,25 +389,25 @@ export default function AdminBlogPage() {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="title" className="text-[11px]">Title *</Label>
+                <Label htmlFor="title" className="text-[13px]">Title *</Label>
                 <Input
                   id="title"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="Post title"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="slug" className="text-[11px]">Slug</Label>
+                <Label htmlFor="slug" className="text-[13px]">Slug</Label>
                 <Input
                   id="slug"
                   value={form.slug}
                   onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                   placeholder="url-friendly-slug"
-                  className="h-8 text-xs font-mono"
+                  className="h-9 text-sm font-mono"
                 />
-                <p className="text-[9px] text-muted-foreground/50">
+                <p className="text-[11px] text-muted-foreground/50">
                   Leave empty to auto-generate from title
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function AdminBlogPage() {
                       setForm((f) => ({ ...f, published: v }))
                     }
                   />
-                  <Label htmlFor="published" className="text-[11px]">
+                  <Label htmlFor="published" className="text-[13px]">
                     Publish
                   </Label>
                 </div>
@@ -428,7 +428,7 @@ export default function AdminBlogPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="excerpt" className="text-[11px]">
+              <Label htmlFor="excerpt" className="text-[13px]">
                 Excerpt (meta description)
               </Label>
               <Textarea
@@ -437,12 +437,12 @@ export default function AdminBlogPage() {
                 onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
                 placeholder="Short summary for SEO and previews"
                 rows={2}
-                className="text-xs resize-none"
+                className="text-sm resize-none"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="content" className="text-[11px]">Content</Label>
+              <Label htmlFor="content" className="text-[13px]">Content</Label>
               <RichTextEditor
                 value={form.content}
                 onChange={(html) => setForm((f) => ({ ...f, content: html }))}
@@ -452,13 +452,13 @@ export default function AdminBlogPage() {
               />
             </div>
 
-            <div className="border-t border-border/30 pt-4 space-y-3">
-              <p className="text-[10px] font-medium text-muted-foreground">
+            <div className="border-t border-border/60 pt-4 space-y-3">
+              <p className="text-[12px] font-medium text-muted-foreground">
                 SEO overrides (optional)
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="metaTitle" className="text-[11px]">
+                  <Label htmlFor="metaTitle" className="text-[13px]">
                     Meta title
                   </Label>
                   <Input
@@ -468,11 +468,11 @@ export default function AdminBlogPage() {
                       setForm((f) => ({ ...f, metaTitle: e.target.value }))
                     }
                     placeholder="Override &lt;title&gt;"
-                    className="h-8 text-xs"
+                    className="h-9 text-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="ogImage" className="text-[11px]">
+                  <Label htmlFor="ogImage" className="text-[13px]">
                     OG image
                   </Label>
                   <div className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export default function AdminBlogPage() {
                       type="button"
                       onClick={() => ogImageInputRef.current?.click()}
                       disabled={ogImageUploading}
-                      className="flex items-center gap-2 h-8 px-3 rounded-md border border-input bg-background text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 h-9 px-3 rounded-xl border border-input bg-background text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
                     >
                       {ogImageUploading ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -497,7 +497,7 @@ export default function AdminBlogPage() {
                       onChange={handleOgImageUpload}
                     />
                     {form.ogImage && (
-                      <div className="relative w-12 h-12 rounded overflow-hidden border border-border/40 shrink-0">
+                      <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-border shrink-0">
                         <Image
                           src={form.ogImage}
                           alt="OG preview"
@@ -511,7 +511,7 @@ export default function AdminBlogPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="metaDescription" className="text-[11px]">
+                <Label htmlFor="metaDescription" className="text-[13px]">
                   Meta description
                 </Label>
                 <Input
@@ -521,7 +521,7 @@ export default function AdminBlogPage() {
                     setForm((f) => ({ ...f, metaDescription: e.target.value }))
                   }
                   placeholder="Override meta description"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                 />
               </div>
             </div>
@@ -531,14 +531,14 @@ export default function AdminBlogPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs h-8"
+              className="text-sm h-9"
               onClick={() => setDialogOpen(false)}
             >
               Cancel
             </Button>
             <Button
               size="sm"
-              className="text-xs h-8 bg-foreground text-background hover:bg-foreground/90"
+              className="text-sm h-9 rounded-full bg-brand text-brand-foreground shadow-[0_3px_0_var(--brand-deep)] hover:bg-brand hover:brightness-110"
               onClick={handleSave}
               disabled={saving || !form.title.trim()}
             >
@@ -553,7 +553,7 @@ export default function AdminBlogPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete post?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
+            <AlertDialogDescription className="text-sm">
               This cannot be undone. The post will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>

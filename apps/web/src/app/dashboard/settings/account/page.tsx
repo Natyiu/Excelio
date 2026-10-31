@@ -3,13 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loading03Icon as Loader2 } from "@hugeicons/react";
+import {
+  Alert02Icon as Alert,
+  Delete02Icon as Trash,
+  Loading03Icon as Loader2,
+  SecurityLockIcon as Lock,
+  SmartPhone01Icon as Device,
+  Tick02Icon as Tick,
+} from "@hugeicons/react";
+import { pressable } from "@/components/game-ui";
 
 import { authClient } from "@/lib/auth-client";
+import { deleteMyAccount } from "@/lib/actions/account";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AccountSettingsSkeleton } from "@/components/skeletons";
+import { Field, SettingsCard, fieldClass } from "../settings-ui";
 
 export default function AccountSettings() {
   const { data: session, isPending } = authClient.useSession();
@@ -30,6 +37,7 @@ export default function AccountSettings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (isPending) return <AccountSettingsSkeleton />;
   if (!session) return null;
@@ -62,136 +70,117 @@ export default function AccountSettings() {
   }
 
   async function handleDeleteAccount() {
+    setDeleting(true);
     try {
-      await authClient.deleteUser();
-      toast.success("Account deleted");
-      router.push("/");
+      const result = await deleteMyAccount();
+      if (!result.ok) {
+        toast.error(result.error);
+        setDeleting(false);
+        return;
+      }
+      // The account is gone; clear this browser's session and leave.
+      await authClient.signOut().catch(() => {});
+      toast.success("Your account and all its data have been deleted.");
+      router.replace("/");
+      router.refresh();
     } catch {
-      toast.error("Failed to delete account");
+      toast.error("Couldn't delete your account. Please try again.");
+      setDeleting(false);
     }
   }
 
+  const passwordFields = [
+    { id: "currentPassword", label: "Current password", value: currentPassword, set: setCurrentPassword, placeholder: "" },
+    { id: "newPassword", label: "New password", value: newPassword, set: setNewPassword, placeholder: "At least 8 characters" },
+    { id: "confirmPassword", label: "Confirm new password", value: confirmPassword, set: setConfirmPassword, placeholder: "" },
+  ];
+
   return (
-    <div className="max-w-md space-y-8">
-      {/* Change password */}
-      <section>
-        <SectionHeader title="Password" description="Update your password to keep your account secure." />
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="currentPassword" className="text-[11px]">
-              Current Password
-            </Label>
-            <Input
-              id="currentPassword"
+    <div className="space-y-6">
+      <SettingsCard
+        icon={Lock}
+        colour="#0284c7"
+        title="Password"
+        hint="Use a strong password you don't use anywhere else."
+        footer={
+          <button
+            type="button"
+            onClick={handleChangePassword}
+            disabled={changingPassword || !currentPassword || !newPassword}
+            className={pressable("brand", "px-6")}
+          >
+            {changingPassword ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update password"
+            )}
+          </button>
+        }
+      >
+        {passwordFields.map((f) => (
+          <Field key={f.id} id={f.id} label={f.label}>
+            <input
+              id={f.id}
               type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="h-8 text-xs"
+              value={f.value}
+              onChange={(e) => f.set(e.target.value)}
+              placeholder={f.placeholder}
+              className={fieldClass}
             />
-          </div>
+          </Field>
+        ))}
+      </SettingsCard>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="newPassword" className="text-[11px]">
-              New Password
-            </Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Min 8 characters"
-              className="h-8 text-xs"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-[11px]">
-              Confirm New Password
-            </Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="h-8 text-xs"
-            />
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleChangePassword}
-              disabled={changingPassword || !currentPassword || !newPassword}
-              size="sm"
-              className="text-xs h-8 bg-foreground text-background hover:bg-foreground/90"
-            >
-              {changingPassword ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                  Updating...
-                </>
-              ) : (
-                "Update Password"
-              )}
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Active sessions */}
-      <section>
-        <SectionHeader title="Sessions" description="Manage your active sessions." />
-        <div className="flex items-center justify-between border border-border/40 px-3 py-2.5">
-          <div>
-            <p className="text-[11px] font-medium">Current Session</p>
-            <p className="text-[10px] text-muted-foreground/50">
-              {session.session.ipAddress ?? "Unknown IP"} &middot;{" "}
-              {session.session.userAgent?.split(" ")[0] ?? "Unknown device"}
+      <SettingsCard icon={Device} colour="#7c3aed" title="Sessions" hint="Devices signed in to your account.">
+        <div className="flex items-center gap-4 rounded-xl border-2 border-border px-4 py-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <Tick className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">This device</p>
+            <p className="truncate text-[13px] text-muted-foreground">
+              {session.session.ipAddress ?? "Unknown IP"} · {session.session.userAgent?.split(" ")[0] ?? "Unknown device"}
             </p>
           </div>
-          <span className="text-[9px] font-medium text-green-500/80">Active</span>
+          <span className="rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-foreground">
+            Active
+          </span>
         </div>
-      </section>
+      </SettingsCard>
 
-      {/* Danger zone */}
-      <section>
-        <div className="mb-3 pb-2 border-b border-red-400/20">
-          <h3 className="text-xs font-semibold text-red-400">Danger Zone</h3>
-          <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-            Irreversible actions. Proceed with caution.
-          </p>
+      <SettingsCard icon={Alert} colour="#e11d48" title="Danger zone" hint="These actions can't be undone." danger>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-bold">Delete account</p>
+            <p className="text-[13px] text-muted-foreground">Removes your account, progress, XP and badges for good.</p>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button type="button" className={pressable("danger", "px-5 py-2 text-sm")}>
+                <Trash className="h-4 w-4" />
+                Delete account
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This can&apos;t be undone. Your account and all of your progress will be permanently deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-white hover:bg-destructive/90">
+                  {deleting ? "Deleting…" : "Delete account"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" className="text-xs h-8">
-              Delete Account
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription className="text-xs">
-                This action cannot be undone. This will permanently delete
-                your account and remove all of your data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAccount} className="text-xs h-8">
-                Delete Account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </section>
-    </div>
-  );
-}
-
-function SectionHeader({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="mb-3 pb-2 border-b border-border/30">
-      <h3 className="text-xs font-semibold">{title}</h3>
-      <p className="text-[10px] text-muted-foreground/50 mt-0.5">{description}</p>
+      </SettingsCard>
     </div>
   );
 }

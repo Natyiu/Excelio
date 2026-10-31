@@ -29,12 +29,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border/40 bg-card/50">
-      <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
+    <div className="rounded-2xl bg-muted/50">
+      <div className="px-4 py-3 border-b border-border/60 flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-muted-foreground/50" />
         <div>
-          <p className="text-xs font-semibold">{title}</p>
-          <p className="text-[10px] text-muted-foreground">{description}</p>
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-[12px] text-muted-foreground">{description}</p>
         </div>
       </div>
       <div className="p-4 space-y-4">{children}</div>
@@ -54,9 +54,9 @@ function FieldRow({
   return (
     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 items-start">
       <div className="pt-1.5">
-        <Label className="text-[11px] font-medium">{label}</Label>
+        <Label className="text-[13px] font-medium">{label}</Label>
         {hint && (
-          <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5">{hint}</p>
         )}
       </div>
       <div>{children}</div>
@@ -78,8 +78,8 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between gap-4 py-1">
       <div>
-        <p className="text-[11px] font-medium">{label}</p>
-        <p className="text-[10px] text-muted-foreground">{hint}</p>
+        <p className="text-[13px] font-medium">{label}</p>
+        <p className="text-[12px] text-muted-foreground">{hint}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>
@@ -202,7 +202,7 @@ export default function AdminSiteSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-base font-semibold tracking-tight">Site Settings</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             Waitlist, countdown, and landing page UI configuration
           </p>
         </div>
@@ -210,7 +210,7 @@ export default function AdminSiteSettingsPage() {
           onClick={handleSave}
           disabled={saving}
           size="sm"
-          className="text-xs h-7"
+          className="text-sm h-8"
         >
           {saving ? "Saving..." : "Save Changes"}
         </Button>
@@ -228,13 +228,13 @@ export default function AdminSiteSettingsPage() {
           onCheckedChange={(v) => handleCountdownToggle("countdownMode", v)}
         />
         {c.countdownMode && (
-          <div className="border-t border-border/20 pt-3 space-y-4">
+          <div className="border-t border-border/60 pt-3 space-y-4">
             <FieldRow label="Target Date & Time" hint="When the countdown ends (launch, availability, etc.)">
               <Input
                 type="datetime-local"
                 value={c.countdownTarget}
                 onChange={(e) => updateCountdown("countdownTarget", e.target.value)}
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Title" hint="Main heading">
@@ -242,7 +242,7 @@ export default function AdminSiteSettingsPage() {
                 value={c.countdownTitle}
                 onChange={(e) => updateCountdown("countdownTitle", e.target.value)}
                 placeholder="Coming soon"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Headline" hint="Subheading">
@@ -250,7 +250,7 @@ export default function AdminSiteSettingsPage() {
                 value={c.countdownHeadline}
                 onChange={(e) => updateCountdown("countdownHeadline", e.target.value)}
                 placeholder="We're launching soon"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Description" hint="Optional longer description">
@@ -258,7 +258,7 @@ export default function AdminSiteSettingsPage() {
                 value={c.countdownDescription}
                 onChange={(e) => updateCountdown("countdownDescription", e.target.value)}
                 placeholder="Tell visitors what to expect..."
-                className="min-h-[60px] text-xs resize-none"
+                className="min-h-[60px] text-sm resize-none"
               />
             </FieldRow>
             <FieldRow label="End Message" hint="Shown when countdown reaches zero">
@@ -266,7 +266,7 @@ export default function AdminSiteSettingsPage() {
                 value={c.countdownEndMessage}
                 onChange={(e) => updateCountdown("countdownEndMessage", e.target.value)}
                 placeholder="We're live!"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
           </div>
@@ -298,7 +298,7 @@ export default function AdminSiteSettingsPage() {
                 value={s.waitlistTitle}
                 onChange={(e) => update("waitlistTitle", e.target.value)}
                 placeholder="Join the waitlist"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Headline" hint="Subheading below the title">
@@ -306,7 +306,7 @@ export default function AdminSiteSettingsPage() {
                 value={s.waitlistHeadline}
                 onChange={(e) => update("waitlistHeadline", e.target.value)}
                 placeholder="Be the first to know when we launch"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Description" hint="Optional longer description">
@@ -314,7 +314,7 @@ export default function AdminSiteSettingsPage() {
                 value={s.waitlistDescription}
                 onChange={(e) => update("waitlistDescription", e.target.value)}
                 placeholder="Tell visitors what they're signing up for..."
-                className="min-h-[60px] text-xs resize-none"
+                className="min-h-[60px] text-sm resize-none"
               />
             </FieldRow>
             <FieldRow label="Button Text" hint="Submit button label">
@@ -322,7 +322,7 @@ export default function AdminSiteSettingsPage() {
                 value={s.waitlistButtonText}
                 onChange={(e) => update("waitlistButtonText", e.target.value)}
                 placeholder="Join waitlist"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
             <FieldRow label="Success Message" hint="Shown after a user joins">
@@ -330,7 +330,7 @@ export default function AdminSiteSettingsPage() {
                 value={s.waitlistSuccessMessage}
                 onChange={(e) => update("waitlistSuccessMessage", e.target.value)}
                 placeholder="You're on the list!"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </FieldRow>
           </SectionCard>
@@ -346,7 +346,7 @@ export default function AdminSiteSettingsPage() {
               checked={s.waitlistShowName}
               onCheckedChange={(v) => handleToggle("waitlistShowName", v)}
             />
-            <div className="border-t border-border/20 pt-3">
+            <div className="border-t border-border/60 pt-3">
               <ToggleRow
                 label="Show Company Field"
                 hint="Collect company/organization name"
@@ -361,12 +361,12 @@ export default function AdminSiteSettingsPage() {
             title="Waitlist Entries"
             description={`${entries.length} signups`}
           >
-            <div className="max-h-64 overflow-y-auto border border-border/30 rounded">
+            <div className="max-h-64 overflow-y-auto border border-border rounded-xl">
               {entries.length === 0 ? (
-                <p className="p-4 text-xs text-muted-foreground text-center">No entries yet</p>
+                <p className="p-4 text-sm text-muted-foreground text-center">No entries yet</p>
               ) : (
-                <table className="w-full text-[11px]">
-                  <thead className="sticky top-0 bg-muted/50 border-b border-border/30">
+                <table className="w-full text-[13px]">
+                  <thead className="sticky top-0 bg-muted/50 border-b border-border/60">
                     <tr>
                       <th className="text-left px-3 py-2 font-medium">Email</th>
                       {s.waitlistShowName && <th className="text-left px-3 py-2 font-medium">Name</th>}
@@ -376,7 +376,7 @@ export default function AdminSiteSettingsPage() {
                   </thead>
                   <tbody>
                     {entries.map((e) => (
-                      <tr key={e.id} className="border-b border-border/20 last:border-0">
+                      <tr key={e.id} className="border-b border-border/60 last:border-0">
                         <td className="px-3 py-2">{e.email}</td>
                         {s.waitlistShowName && <td className="px-3 py-2">{e.name ?? "—"}</td>}
                         {s.waitlistShowCompany && <td className="px-3 py-2">{e.company ?? "—"}</td>}
@@ -398,7 +398,7 @@ export default function AdminSiteSettingsPage() {
           onClick={handleSave}
           disabled={saving}
           size="sm"
-          className="text-xs h-7"
+          className="text-sm h-8"
         >
           {saving ? "Saving..." : "Save All Changes"}
         </Button>

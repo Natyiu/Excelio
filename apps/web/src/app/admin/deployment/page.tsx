@@ -9,9 +9,9 @@ const steps = [
     description: "Run a production build before pushing. If it fails locally, it will fail on Vercel too.",
     icon: Wrench,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
+      <div className="space-y-2 text-[13px] text-muted-foreground">
         <p>From the project root, run:</p>
-        <code className="block bg-muted/50 px-3 py-2 rounded text-[10px] font-mono overflow-x-auto">
+        <code className="block bg-muted/50 px-3 py-2 rounded-xl text-[12px] font-mono overflow-x-auto">
           pnpm install<br />
           pnpm run build
         </code>
@@ -25,9 +25,9 @@ const steps = [
     description: "Create a new repository on GitHub and push your code.",
     icon: Github,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
+      <div className="space-y-2 text-[13px] text-muted-foreground">
         <p>Initialize git (if needed), add your remote, and push:</p>
-        <code className="block bg-muted/50 px-3 py-2 rounded text-[10px] font-mono overflow-x-auto">
+        <code className="block bg-muted/50 px-3 py-2 rounded-xl text-[12px] font-mono overflow-x-auto">
           git init<br />
           git add .<br />
           git commit -m &quot;Initial commit&quot;<br />
@@ -44,8 +44,8 @@ const steps = [
     description: "Add all variables from your .env file to the Vercel project.",
     icon: Server,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
-        <p>In Vercel → Project → Settings → Environment Variables, add each variable from your local <code className="bg-muted/50 px-1 rounded">.env</code> file. Include at minimum:</p>
+      <div className="space-y-2 text-[13px] text-muted-foreground">
+        <p>In Vercel → Project → Settings → Environment Variables, add each variable from your local <code className="bg-muted/50 px-1 rounded-xl">.env</code> file. Include at minimum:</p>
         <ul className="list-disc list-inside space-y-1 ml-2">
           <li>BETTER_AUTH_SECRET</li>
           <li>BETTER_AUTH_URL</li>
@@ -63,13 +63,13 @@ const steps = [
     description: "Change the build command from turbo to pnpm.",
     icon: Terminal,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
+      <div className="space-y-2 text-[13px] text-muted-foreground">
         <p>In Vercel → Project → Settings → General → Build & Development Settings:</p>
         <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Set <strong>Build Command</strong> to: <code className="bg-muted/50 px-1 rounded">pnpm run build</code></li>
-          <li>Set <strong>Install Command</strong> to: <code className="bg-muted/50 px-1 rounded">pnpm install</code></li>
+          <li>Set <strong>Build Command</strong> to: <code className="bg-muted/50 px-1 rounded-xl">pnpm run build</code></li>
+          <li>Set <strong>Install Command</strong> to: <code className="bg-muted/50 px-1 rounded-xl">pnpm install</code></li>
         </ul>
-        <p>If deploying only the web app from a monorepo, you may need <code className="bg-muted/50 px-1 rounded">pnpm run build --filter=web</code> or set Root Directory to <code className="bg-muted/50 px-1 rounded">apps/web</code>.</p>
+        <p>If deploying only the web app from a monorepo, you may need <code className="bg-muted/50 px-1 rounded-xl">pnpm run build --filter=web</code> or set Root Directory to <code className="bg-muted/50 px-1 rounded-xl">apps/web</code>.</p>
       </div>
     ),
   },
@@ -79,7 +79,7 @@ const steps = [
     description: "Trigger a deployment from the Vercel dashboard or by pushing to your connected branch.",
     icon: Rocket,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
+      <div className="space-y-2 text-[13px] text-muted-foreground">
         <p>Connect your GitHub repo to Vercel, then deploy. Vercel will build and deploy automatically on each push.</p>
       </div>
     ),
@@ -90,10 +90,10 @@ const steps = [
     description: "Set your production domain in environment variables.",
     icon: Globe,
     details: (
-      <div className="space-y-2 text-[11px] text-muted-foreground">
-        <p>After your first deploy, Vercel will give you a URL (e.g. <code className="bg-muted/50 px-1 rounded">https://your-app.vercel.app</code>). Update these in Vercel → Settings → Environment Variables:</p>
+      <div className="space-y-2 text-[13px] text-muted-foreground">
+        <p>After your first deploy, Vercel will give you a URL (e.g. <code className="bg-muted/50 px-1 rounded-xl">https://your-app.vercel.app</code>). Update these in Vercel → Settings → Environment Variables:</p>
         <ul className="list-disc list-inside space-y-1 ml-2">
-          <li><strong>BETTER_AUTH_URL</strong> → your production URL (e.g. <code className="bg-muted/50 px-1 rounded">https://your-app.vercel.app</code>)</li>
+          <li><strong>BETTER_AUTH_URL</strong> → your production URL (e.g. <code className="bg-muted/50 px-1 rounded-xl">https://your-app.vercel.app</code>)</li>
           <li><strong>CORS_ORIGIN</strong> → same as BETTER_AUTH_URL</li>
         </ul>
         <p>If you use a custom domain, use that instead. Redeploy after updating so the new values take effect.</p>
@@ -106,8 +106,8 @@ export default function AdminDeploymentPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-lg font-semibold tracking-tight">Deployment</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h1 className="text-[28px] font-bold tracking-tight">Deployment</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Step-by-step guide to deploy your app on Vercel
         </p>
       </div>
@@ -116,20 +116,20 @@ export default function AdminDeploymentPage() {
         {steps.map((step) => (
           <div
             key={step.number}
-            className="border border-border/40 bg-card/50 overflow-hidden"
+            className="rounded-2xl overflow-hidden bg-muted/50"
           >
-            <div className="px-4 py-3 border-b border-border/30 flex items-start gap-3">
+            <div className="px-4 py-3 border-b border-border/60 flex items-start gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <step.icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted-foreground/70">
+                  <span className="text-[12px] font-bold text-muted-foreground/70">
                     STEP {step.number}
                   </span>
                 </div>
-                <p className="text-xs font-semibold mt-0.5">{step.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-sm font-semibold mt-0.5">{step.title}</p>
+                <p className="text-[13px] text-muted-foreground mt-0.5">
                   {step.description}
                 </p>
               </div>

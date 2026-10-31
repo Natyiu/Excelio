@@ -2,16 +2,15 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { Loading03Icon as Loader2 } from "@hugeicons/react";
+import { Camera01Icon as Camera, Loading03Icon as Loader2, UserIcon as User } from "@hugeicons/react";
+import { pressable } from "@/components/game-ui";
+import { cn } from "@/lib/utils";
+import { Field, SettingsCard, fieldClass } from "./settings-ui";
 
 import { authClient } from "@/lib/auth-client";
 import { updateProfile } from "@/lib/actions/user";
 import { uploadFile } from "@/lib/supabase";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileSettingsSkeleton } from "@/components/skeletons";
 
@@ -89,113 +88,76 @@ export default function ProfileSettings() {
   }
 
   return (
-    <div className="max-w-md space-y-8">
-      {/* Avatar */}
-      <section>
-        <SectionHeader title="Avatar" description="Click to upload a new profile picture." />
-        <div className="flex items-center gap-4">
+    <div className="space-y-6">
+      {/* Photo */}
+      <SettingsCard icon={Camera} colour="#db2777" title="Profile photo" hint="Shown on your profile and the leaderboard.">
+        <div className="flex items-center gap-5">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="relative group cursor-pointer"
+            className="group relative shrink-0 cursor-pointer"
             disabled={uploading}
+            aria-label="Change photo"
           >
-            <Avatar className="h-14 w-14">
+            <Avatar className="h-24 w-24 border-4 border-brand-soft">
               <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="text-xs font-bold bg-muted text-foreground/60">
-                {initials}
-              </AvatarFallback>
+              <AvatarFallback className="bg-brand-soft text-2xl font-bold text-brand">{initials}</AvatarFallback>
             </Avatar>
-            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              {uploading ? (
-                <Loader2 className="h-3 w-3 text-white animate-spin" />
-              ) : (
-                <span className="text-white text-[9px] font-medium">Edit</span>
-              )}
-            </div>
+            <span className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-card bg-brand text-brand-foreground shadow-[0_2px_0_var(--brand-deep)] transition-transform group-hover:scale-105">
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+            </span>
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarUpload}
-          />
-          <div className="text-[10px] text-muted-foreground/50 space-y-0.5">
-            <p>Square image, at least 200×200px.</p>
-            <p>Max 5MB. JPG, PNG, or WebP.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Profile info */}
-      <section>
-        <SectionHeader title="Profile" description="Your name and bio visible to others." />
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-[11px]">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="h-8 text-xs"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-[11px]">Email</Label>
-            <Input
-              id="email"
-              value={session.user.email}
-              disabled
-              className="h-8 text-xs opacity-50"
-            />
-            <p className="text-[9px] text-muted-foreground/40">
-              Email cannot be changed here.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="bio" className="text-[11px]">Bio</Label>
-            <Textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us about yourself..."
-              rows={3}
-              className="text-xs resize-none"
-            />
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              size="sm"
-              className="text-xs h-8 bg-foreground text-background hover:bg-foreground/90"
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          <div className="min-w-0 space-y-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className={pressable("outline", "px-4 py-2 text-sm")}
             >
-              {saving ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
+              {uploading ? "Uploading..." : "Change photo"}
+            </button>
+            <p className="text-[13px] text-muted-foreground">Square image, at least 200×200px. Max 5MB, JPG, PNG or WebP.</p>
           </div>
         </div>
-      </section>
-    </div>
-  );
-}
+      </SettingsCard>
 
-function SectionHeader({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="mb-3 pb-2 border-b border-border/30">
-      <h3 className="text-xs font-semibold">{title}</h3>
-      <p className="text-[10px] text-muted-foreground/50 mt-0.5">{description}</p>
+      {/* Details */}
+      <SettingsCard
+        icon={User}
+        colour="#1d9a52"
+        title="About you"
+        hint="Your name and bio are visible to other learners."
+        footer={
+          <button type="button" onClick={handleSave} disabled={saving} className={pressable("brand", "px-6")}>
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save changes"
+            )}
+          </button>
+        }
+      >
+        <Field id="name" label="Name">
+          <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={fieldClass} />
+        </Field>
+        <Field id="email" label="Email" note="Your email can't be changed here.">
+          <input id="email" value={session.user.email} disabled className={fieldClass} />
+        </Field>
+        <Field id="bio" label="Bio">
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell other learners a little about yourself..."
+            rows={3}
+            className={cn(fieldClass, "h-auto resize-none py-3")}
+          />
+        </Field>
+      </SettingsCard>
     </div>
   );
 }

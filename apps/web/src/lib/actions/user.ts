@@ -9,7 +9,7 @@ import { notifyUser } from "@/lib/notify";
 const DEFAULT_APP_SETTINGS = {
   id: "default",
   onboardingEnabled: true,
-  appName: "Batman",
+  appName: "Excelio",
   appDescription: "",
   appUrl: "",
   metaTitle: null as string | null,
@@ -190,6 +190,7 @@ export async function getAuthConfig() {
   return {
     socialLoginEnabled: settings.socialLoginEnabled,
     googleEnabled,
+    emailVerificationEnabled: settings.emailVerificationEnabled ?? false,
     forgotPasswordEnabled: settings.forgotPasswordEnabled ?? true,
     organizationsEnabled: settings.organizationsEnabled,
     invitesEnabled: settings.invitesEnabled,

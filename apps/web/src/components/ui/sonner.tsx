@@ -27,16 +27,16 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "!bg-card !text-card-foreground !border-border !rounded-none !shadow-sm !font-sans",
+            "!bg-card !text-card-foreground !border-border !rounded-2xl !shadow-lg !font-sans",
           title: "!text-xs !font-semibold !tracking-tight",
           description: "!text-[10px] !text-muted-foreground",
           icon: "!text-foreground",
           actionButton:
-            "!bg-foreground !text-background !rounded-none !text-[10px] !font-semibold !h-7 !px-2.5",
+            "!bg-foreground !text-background !rounded-full !text-[10px] !font-semibold !h-7 !px-2.5",
           cancelButton:
-            "!bg-transparent !text-muted-foreground !border !border-border !rounded-none !text-[10px] !font-semibold !h-7 !px-2.5",
+            "!bg-transparent !text-muted-foreground !border !border-border !rounded-full !text-[10px] !font-semibold !h-7 !px-2.5",
           closeButton:
-            "!bg-transparent !text-muted-foreground !border-border !rounded-none",
+            "!bg-transparent !text-muted-foreground !border-border !rounded-full",
           success: "!border-foreground/20",
           error: "!border-foreground/20",
           warning: "!border-foreground/20",

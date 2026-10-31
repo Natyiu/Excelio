@@ -1,7 +1,9 @@
 import { auth } from "@Batman/auth";
 import { headers } from "next/headers";
 
+import { CrownIcon as Crown } from "@hugeicons/react";
 import { getSubscriptionStatus } from "@/lib/subscription";
+import { IconTile, PageHeader, Panel } from "@/components/game-ui";
 
 export default async function ProDashboardPage() {
   const session = await auth.api.getSession({
@@ -12,30 +14,28 @@ export default async function ProDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-base font-semibold tracking-tight">Pro</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          You have an active subscription.
-        </p>
-      </div>
+      <PageHeader title="Pro" description="You have an active subscription." />
 
       {subscription && (
-        <div className="border border-border/40 bg-card/50 p-4">
-          <p className="text-xs font-medium">Subscription</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Status: <span className="capitalize">{subscription.status}</span>
-            {subscription.cancelAtPeriodEnd && (
-              <span className="ml-1">(ends at period end)</span>
-            )}
-          </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Current period ends:{" "}
-            {subscription.currentPeriodEnd.toLocaleDateString()}
-          </p>
-        </div>
+        <Panel className="flex items-center gap-4 p-5">
+          <IconTile tone="violet">
+            <Crown className="h-6 w-6" />
+          </IconTile>
+          <div className="min-w-0">
+            <p className="font-bold">
+              Subscription · <span className="capitalize">{subscription.status}</span>
+              {subscription.cancelAtPeriodEnd && (
+                <span className="ml-1 font-normal text-muted-foreground">(ends at period end)</span>
+              )}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Current period ends {subscription.currentPeriodEnd.toLocaleDateString()}
+            </p>
+          </div>
+        </Panel>
       )}
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-[15px] text-muted-foreground">
         This is a subscription-protected area. Add your premium content here.
       </p>
     </div>

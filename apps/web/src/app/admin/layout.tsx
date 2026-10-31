@@ -19,10 +19,14 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex min-h-screen">
-        <AdminSidebar />
-        <div className="flex-1 p-5 md:p-8 min-w-0 md:ml-48">
+    // Inside the admin, "primary" buttons and badges use the brand green, like the rest of the app.
+    <div
+      className="min-h-screen bg-background font-apple text-foreground antialiased"
+      style={{ "--primary": "var(--brand)", "--primary-foreground": "var(--brand-foreground)", "--ring": "var(--brand)" } as React.CSSProperties}
+    >
+      <AdminSidebar />
+      <div className="min-w-0 px-4 py-6 md:ml-60 md:px-10 md:py-10">
+        <div className="mx-auto max-w-6xl">
           <AdminMobileNav />
           {children}
         </div>

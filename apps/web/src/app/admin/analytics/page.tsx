@@ -29,9 +29,9 @@ import { WorldMap } from "@/components/world-map";
 import type { Analytics } from "@/types/admin-analytics";
 
 const MONO = {
-  solid: "var(--foreground)",
-  medium: "color-mix(in oklch, var(--foreground) 55%, transparent)",
-  light: "color-mix(in oklch, var(--foreground) 30%, transparent)",
+  solid: "var(--brand)",
+  medium: "color-mix(in oklch, var(--brand) 60%, transparent)",
+  light: "color-mix(in oklch, var(--brand) 35%, transparent)",
   faint: "color-mix(in oklch, var(--foreground) 15%, transparent)",
 };
 
@@ -47,11 +47,11 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border/40 bg-card/50">
-      <div className="px-5 py-3 border-b border-border/30">
-        <h3 className="text-xs font-semibold">{title}</h3>
+    <div className="rounded-2xl bg-muted/50">
+      <div className="px-5 py-3 border-b border-border/60">
+        <h3 className="text-sm font-semibold">{title}</h3>
         {description && (
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[12px] text-muted-foreground mt-0.5">
             {description}
           </p>
         )}
@@ -72,18 +72,18 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-popover border border-border shadow-lg px-3 py-2">
-      <p className="text-[10px] font-medium mb-1">{label}</p>
+    <div className="rounded-2xl bg-popover shadow-lg px-3 py-2 bg-muted/50">
+      <p className="text-[12px] font-medium mb-1">{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center gap-2">
           <div
             className="w-2 h-2 rounded-full"
             style={{ backgroundColor: p.color }}
           />
-          <span className="text-[10px] text-muted-foreground capitalize">
+          <span className="text-[12px] text-muted-foreground capitalize">
             {p.name}:
           </span>
-          <span className="text-[10px] font-semibold">{p.value}</span>
+          <span className="text-[12px] font-semibold">{p.value}</span>
         </div>
       ))}
     </div>
@@ -108,7 +108,7 @@ function RingGauge({
   const size = (radius + stroke) * 2;
 
   return (
-    <div className="border border-border/40 bg-card/50 p-4 flex items-center gap-4">
+    <div className="rounded-2xl p-4 flex items-center gap-4 bg-muted/50">
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
           <circle
@@ -141,11 +141,11 @@ function RingGauge({
       <div className="min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <Icon className="h-3 w-3 text-muted-foreground/50" />
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
             {label}
           </p>
         </div>
-        <p className="text-[10px] text-muted-foreground">{sub}</p>
+        <p className="text-[12px] text-muted-foreground">{sub}</p>
       </div>
     </div>
   );
@@ -217,9 +217,9 @@ function StatCard({
         : "text-muted-foreground/30";
 
   return (
-    <div className="border border-border/40 bg-card/50 p-4">
+    <div className="rounded-2xl p-4 bg-muted/50">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           {label}
         </p>
         <Icon className="h-3.5 w-3.5 text-muted-foreground/40" />
@@ -236,7 +236,7 @@ function StatCard({
         )}
       </div>
       {sub && (
-        <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>
+        <p className="text-[12px] text-muted-foreground mt-1">{sub}</p>
       )}
     </div>
   );
@@ -257,8 +257,8 @@ function HorizontalBar({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium">{label}</span>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[12px] font-medium">{label}</span>
+        <span className="text-[12px] text-muted-foreground">
           {count} · {Math.round(pct)}%
         </span>
       </div>
@@ -316,8 +316,8 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Analytics</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h1 className="text-[28px] font-bold tracking-tight">Analytics</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           The metrics that matter — last 30 days.
         </p>
       </div>
@@ -466,17 +466,17 @@ export default function AdminAnalyticsPage() {
         <div className="flex items-center gap-5 mt-3 px-1">
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-px bg-foreground" />
-            <span className="text-[10px] text-muted-foreground">Signups</span>
+            <span className="text-[12px] text-muted-foreground">Signups</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-px bg-foreground/55 border-t border-dashed border-foreground/55" />
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               Active Users
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-px bg-foreground/30 border-t border-dotted border-foreground/30" />
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               Total (right axis)
             </span>
           </div>
@@ -537,7 +537,7 @@ export default function AdminAnalyticsPage() {
           description="How users create their accounts"
         >
           {authProviders.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">
+            <p className="text-sm text-muted-foreground text-center py-8">
               No account data yet
             </p>
           ) : (

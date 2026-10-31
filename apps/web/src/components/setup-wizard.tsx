@@ -55,7 +55,7 @@ const STEP_TUTORIALS: Partial<Record<StepId, { title: string; duration: string; 
   },
 };
 
-const RESEND_DEFAULT_FROM = "Batman <onboarding@resend.dev>";
+const RESEND_DEFAULT_FROM = "Excelio <onboarding@resend.dev>";
 
 /** Parse setup errors to extract friendly hints */
 function parseSetupError(message: string): {

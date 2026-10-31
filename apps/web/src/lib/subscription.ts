@@ -1,7 +1,8 @@
 import prisma from "@Batman/db";
 import type { SubscriptionStatus } from "@/types/subscription";
 
-const ACTIVE_STATUSES = ["active", "trialing"] as const;
+// "lifetime" is a one-time Pro purchase; it never expires.
+const ACTIVE_STATUSES = ["active", "trialing", "lifetime"] as const;
 
 export async function getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
   const sub = await prisma.subscription.findUnique({

@@ -188,13 +188,13 @@ export default function AdminProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-base font-semibold tracking-tight">Products</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             Manage SaaS pricing and one-time products via Polar.
           </p>
         </div>
         <Button
           size="sm"
-          className="h-8 text-xs gap-1.5"
+          className="h-9 text-sm gap-1.5"
           onClick={() => setCreateOpen(true)}
         >
           <Plus className="h-3 w-3" />
@@ -203,31 +203,31 @@ export default function AdminProductsPage() {
       </div>
 
       {error && (
-        <div className="border border-destructive/30 bg-destructive/5 px-4 py-3 rounded-md">
-          <p className="text-xs text-destructive">{error}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+        <div className="border border-destructive/30 bg-destructive/5 px-4 py-3 rounded-xl">
+          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-[12px] text-muted-foreground mt-1">
             Configure Polar in Admin → API Keys (access token + organization ID).
           </p>
         </div>
       )}
 
-      <div className="border border-border/40 bg-card/50">
-        <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
+      <div className="rounded-2xl bg-muted/50">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="h-3.5 w-3.5 text-muted-foreground/50" />
             <div>
-              <p className="text-xs font-semibold">Polar Products</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-sm font-semibold">Polar Products</p>
+              <p className="text-[12px] text-muted-foreground">
                 {products.length} product{products.length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
-          <label className="flex items-center gap-2 text-[11px] cursor-pointer">
+          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
             <input
               type="checkbox"
               checked={includeArchived}
               onChange={(e) => setIncludeArchived(e.target.checked)}
-              className="rounded"
+              className="rounded-xl"
             />
             Include archived
           </label>
@@ -240,7 +240,7 @@ export default function AdminProductsPage() {
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <CreditCard className="h-8 w-8 text-muted-foreground/20 mb-3" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {error ? "Configure Polar to load products" : "No products yet"}
             </p>
             {!error && (
@@ -265,20 +265,20 @@ export default function AdminProductsPage() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-semibold truncate">{product.name}</h3>
+                    <h3 className="text-sm font-semibold truncate">{product.name}</h3>
                     {product.isArchived && (
-                      <span className="text-[9px] px-1.5 py-px bg-muted text-muted-foreground">
+                      <span className="text-[11px] px-1.5 py-px bg-muted text-muted-foreground">
                         Archived
                       </span>
                     )}
                     {product.isRecurring && (
-                      <span className="text-[9px] px-1.5 py-px bg-primary/10 text-primary">
+                      <span className="text-[11px] px-1.5 py-px bg-primary/10 text-primary">
                         {product.recurringInterval === "month" ? "Monthly" : "Yearly"}
                       </span>
                     )}
                   </div>
                   {product.description && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                    <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-2">
                       {product.description}
                     </p>
                   )}
@@ -286,7 +286,7 @@ export default function AdminProductsPage() {
                     {product.prices.map((p) => (
                       <span
                         key={p.id}
-                        className="flex items-center gap-1 text-[10px] text-muted-foreground"
+                        className="flex items-center gap-1 text-[12px] text-muted-foreground"
                       >
                         <DollarSign className="h-2.5 w-2.5" />
                         {formatPrice(p)}
@@ -298,7 +298,7 @@ export default function AdminProductsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-xs text-muted-foreground hover:text-destructive shrink-0"
+                    className="h-8 text-sm text-muted-foreground hover:text-destructive shrink-0"
                     onClick={() => setArchiveId(product.id)}
                   >
                     <Archive className="h-3 w-3" />
@@ -320,7 +320,7 @@ export default function AdminProductsPage() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="prod-name" className="text-[11px] font-medium">
+              <Label htmlFor="prod-name" className="text-[13px] font-medium">
                 Name *
               </Label>
               <Input
@@ -328,12 +328,12 @@ export default function AdminProductsPage() {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Pro Plan"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="prod-desc" className="text-[11px] font-medium">
+              <Label htmlFor="prod-desc" className="text-[13px] font-medium">
                 Description (optional)
               </Label>
               <Textarea
@@ -342,15 +342,15 @@ export default function AdminProductsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="Full access to all features"
                 rows={2}
-                className="text-xs resize-none"
+                className="text-sm resize-none"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-medium">
+              <Label className="text-[13px] font-medium">
                 Features (optional)
               </Label>
-              <p className="text-[9px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 Add bullet points for the pricing page. Shown as an unordered list.
               </p>
               <div className="space-y-2">
@@ -367,7 +367,7 @@ export default function AdminProductsPage() {
                         }))
                       }
                       placeholder={`Feature ${i + 1}`}
-                      className="h-8 text-xs flex-1"
+                      className="h-9 text-sm flex-1"
                     />
                     <Button
                       type="button"
@@ -389,7 +389,7 @@ export default function AdminProductsPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs w-full border-dashed"
+                  className="h-9 text-sm w-full border-dashed"
                   onClick={() =>
                     setForm((f) => ({ ...f, features: [...f.features, ""] }))
                   }
@@ -401,19 +401,19 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-medium">Pricing type</Label>
+              <Label className="text-[13px] font-medium">Pricing type</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) =>
                   setForm((f) => ({ ...f, type: v as typeof form.type }))
                 }
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {PRICING_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value} className="text-xs">
+                    <SelectItem key={t.value} value={t.value} className="text-sm">
                       {t.label}
                     </SelectItem>
                   ))}
@@ -423,7 +423,7 @@ export default function AdminProductsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="prod-price" className="text-[11px] font-medium">
+                <Label htmlFor="prod-price" className="text-[13px] font-medium">
                   Price *
                 </Label>
                 <Input
@@ -434,26 +434,26 @@ export default function AdminProductsPage() {
                   value={form.priceAmount}
                   onChange={(e) => setForm((f) => ({ ...f, priceAmount: e.target.value }))}
                   placeholder="9.99"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                 />
-                <p className="text-[9px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   Min $0.50. Enter in dollars (e.g. 9.99).
                 </p>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="prod-currency" className="text-[11px] font-medium">
+                <Label htmlFor="prod-currency" className="text-[13px] font-medium">
                   Currency
                 </Label>
                 <Select
                   value={form.priceCurrency}
                   onValueChange={(v) => setForm((f) => ({ ...f, priceCurrency: v }))}
                 >
-                  <SelectTrigger id="prod-currency" className="h-8 text-xs">
+                  <SelectTrigger id="prod-currency" className="h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {CURRENCIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value} className="text-xs">
+                      <SelectItem key={c.value} value={c.value} className="text-sm">
                         {c.label}
                       </SelectItem>
                     ))}
@@ -468,7 +468,7 @@ export default function AdminProductsPage() {
               onClick={handleCreate}
               disabled={saving}
               size="sm"
-              className="h-8 text-xs"
+              className="h-9 text-sm"
             >
               {saving ? (
                 <>

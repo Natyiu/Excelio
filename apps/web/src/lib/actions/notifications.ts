@@ -140,6 +140,17 @@ export async function markNotificationRead(recipientId: string) {
   });
 }
 
+/** Mark notifications as read because the learner has seen them on screen. */
+export async function markNotificationsSeen(recipientIds: string[]) {
+  const session = await requireAuth();
+  if (!recipientIds.length) return;
+
+  await prisma.notificationRecipient.updateMany({
+    where: { id: { in: recipientIds }, userId: session.user.id, read: false },
+    data: { read: true, readAt: new Date() },
+  });
+}
+
 export async function markAllNotificationsRead() {
   const session = await requireAuth();
 

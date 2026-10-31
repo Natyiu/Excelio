@@ -15,6 +15,8 @@ import { authClient } from "@/lib/auth-client";
 import { getAuthConfig } from "@/lib/actions/user";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState, pressable } from "@/components/game-ui";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -167,15 +169,12 @@ export default function OrganizationsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Organizations</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-bold tracking-tight lg:text-[28px]">Organizations</h1>
+          <p className="mt-1 text-[15px] text-muted-foreground">
             Organizations are currently disabled by the admin.
           </p>
         </div>
-        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border">
-          <Building2 className="h-10 w-10 text-muted-foreground/20 mb-4" />
-          <p className="text-xs text-muted-foreground">This feature is not enabled.</p>
-        </div>
+        <EmptyState icon={<Building2 className="h-8 w-8" />} title="This feature is not enabled" />
       </div>
     );
   }
@@ -184,21 +183,21 @@ export default function OrganizationsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Organizations</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-bold tracking-tight lg:text-[28px]">Organizations</h1>
+          <p className="mt-1 text-[15px] text-muted-foreground">
             Create and manage your teams.
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="text-xs gap-1.5">
-              <Plus className="h-3 w-3" />
+            <Button className={pressable("brand", "h-auto")}>
+              <Plus className="h-4 w-4" />
               New
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-sm">Create Organization</DialogTitle>
+              <DialogTitle className="text-lg font-bold">Create Organization</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 pt-2">
               <Input
@@ -231,10 +230,10 @@ export default function OrganizationsPage() {
 
       {/* Org list */}
       {orgs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border">
-          <Building2 className="h-10 w-10 text-muted-foreground/20 mb-4" />
-          <h3 className="text-sm font-medium">No organizations</h3>
-          <p className="text-xs text-muted-foreground mt-1">
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-border py-16 text-center">
+          <Building2 className="mb-4 h-10 w-10 text-muted-foreground/40" />
+          <h3 className="text-lg font-bold">No organizations</h3>
+          <p className="mt-1 text-[15px] text-muted-foreground">
             Create your first organization to start collaborating.
           </p>
         </div>
@@ -246,17 +245,18 @@ export default function OrganizationsPage() {
               <button
                 key={org.id}
                 onClick={() => handleSwitchOrg(org.id)}
-                className={`w-full text-left border p-3 transition-colors ${
-                  isActive ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"
-                }`}
+                className={cn(
+                  "w-full rounded-3xl border p-4 text-left transition-colors",
+                  isActive ? "border-transparent bg-brand-soft" : "border-border bg-card hover:bg-muted"
+                )}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold">{org.name}</p>
-                    <p className="text-[10px] text-muted-foreground">/{org.slug}</p>
+                    <p className="font-bold">{org.name}</p>
+                    <p className="text-sm text-muted-foreground">/{org.slug}</p>
                   </div>
                   {isActive && (
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5">
+                    <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand-foreground">
                       Active
                     </span>
                   )}
@@ -269,10 +269,10 @@ export default function OrganizationsPage() {
 
       {/* Active org details */}
       {activeOrg && (
-        <div className="border border-border">
-          <div className="border-b border-border px-5 py-3 flex items-center justify-between">
+        <div className="overflow-hidden rounded-3xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div>
-              <h2 className="text-sm font-semibold">{activeOrg.name}</h2>
+              <h2 className="text-lg font-bold">{activeOrg.name}</h2>
               <p className="text-[10px] text-muted-foreground">
                 {activeOrg.members?.length ?? 0} member{(activeOrg.members?.length ?? 0) !== 1 ? "s" : ""}
               </p>
@@ -281,14 +281,14 @@ export default function OrganizationsPage() {
               {config?.invitesEnabled && (
                 <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-xs gap-1.5 h-7">
-                      <Mail className="h-3 w-3" />
+                    <Button variant="outline" className={pressable("outline", "h-auto px-3 py-2")}>
+                      <Mail className="h-4 w-4" />
                       Invite
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="text-sm">Invite Member</DialogTitle>
+                      <DialogTitle className="text-lg font-bold">Invite Member</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 pt-2">
                       <Input
@@ -324,26 +324,26 @@ export default function OrganizationsPage() {
 
           <div className="divide-y divide-border">
             {activeOrg.members?.map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 bg-primary/10 border border-border flex items-center justify-center shrink-0">
-                    <span className="text-[9px] font-bold text-primary">
+              <div key={member.id} className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft">
+                    <span className="text-sm font-bold text-brand">
                       {member.user?.name?.charAt(0).toUpperCase() ?? "?"}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-medium truncate">
+                      <p className="truncate font-bold">
                         {member.user?.name ?? "Unnamed"}
                       </p>
                       {member.role === "owner" && (
-                        <Crown className="h-2.5 w-2.5 text-yellow-500" />
+                        <Crown className="h-4 w-4 text-amber-500" />
                       )}
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-1 py-px">
+                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         {member.role}
                       </span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <p className="truncate text-sm text-muted-foreground">
                       {member.user?.email}
                     </p>
                   </div>
@@ -352,11 +352,11 @@ export default function OrganizationsPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive"
                     onClick={() => handleRemoveMember(member.id)}
                     disabled={isPending}
                   >
-                    <UserMinus className="h-3 w-3" />
+                    <UserMinus className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -364,8 +364,8 @@ export default function OrganizationsPage() {
 
             {(!activeOrg.members || activeOrg.members.length === 0) && (
               <div className="p-6 text-center">
-                <Users className="h-6 w-6 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">No members yet</p>
+                <Users className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+                <p className="text-[15px] text-muted-foreground">No members yet</p>
               </div>
             )}
           </div>

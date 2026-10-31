@@ -1,0 +1,13 @@
+/// Founder controls for a chapter (a course in data/curriculum). Chapters without a row
+/// use the defaults in apps/web/src/lib/curriculum-settings.ts.
+model ChapterSetting {
+  /// The chapter's id from the curriculum, e.g. "b3".
+  courseId  String   @id
+  /// "free" or "pro"
+  access    String   @default("pro")
+  /// Hidden chapters don't appear for learners and are skipped in the lesson order.
+  hidden    Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@map("chapter_setting")
+}

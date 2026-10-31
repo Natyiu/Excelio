@@ -64,7 +64,7 @@ export async function connectPolarWebhook(
       format: "raw",
       events: SUBSCRIPTION_WEBHOOK_EVENTS,
       organization_id: params.organizationId,
-      name: "Batman setup wizard",
+      name: "Excelio setup wizard",
     }),
   });
 

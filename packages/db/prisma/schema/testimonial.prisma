@@ -1,0 +1,21 @@
+/// A review left by a learner. Shown on the landing page only after an admin approves it.
+model Testimonial {
+  id          String   @id @default(cuid())
+  /// One testimonial per learner; submitting again updates it.
+  userId      String   @unique
+  quote       String
+  /// How the learner wants to be credited, e.g. "Sara K."
+  displayName String
+  /// Where they're from, e.g. "Austin, USA"
+  location    String
+  /// Lessons finished when they wrote it, shown as a small badge.
+  lessonsDone Int      @default(0)
+  /// The learner agreed to have it shown publicly with their name and place.
+  consent     Boolean  @default(false)
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([approved, createdAt])
+  @@map("testimonial")
+}

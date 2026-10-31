@@ -74,18 +74,18 @@ export default function AdminFeaturesPage() {
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <h1 className="text-lg font-semibold tracking-tight">Features</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h1 className="text-[28px] font-bold tracking-tight">Features</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Toggle features on or off. Changes take effect immediately.
         </p>
       </div>
 
-      <div className="space-y-0 border border-border divide-y divide-border">
+      <div className="rounded-2xl space-y-0 divide-y divide-border/60 bg-muted/50">
         {features.map((f) => (
           <div key={f.key} className="flex items-center justify-between gap-4 p-4">
             <div className="min-w-0">
-              <p className="text-xs font-medium">{f.label}</p>
-              <p className="text-[10px] text-muted-foreground">{f.description}</p>
+              <p className="text-sm font-medium">{f.label}</p>
+              <p className="text-[12px] text-muted-foreground">{f.description}</p>
             </div>
             <Switch
               checked={settings?.[f.key] ?? false}

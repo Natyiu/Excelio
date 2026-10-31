@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { EmptyState, Panel, pressable } from "@/components/game-ui";
+import { cn } from "@/lib/utils";
+import { useMounted } from "@/lib/use-mounted";
 import {
   Select,
   SelectContent,
@@ -13,18 +17,13 @@ import {
   Notification01Icon as Bell,
   Attachment01Icon as Paperclip,
   Tick01Icon as Check,
-  TickDouble01Icon as CheckCheck,
   Download01Icon as Download,
   ArrowLeft02Icon as ChevronLeft,
   ArrowRight02Icon as ChevronRight,
   InboxIcon as Inbox,
   FilterIcon as Filter,
 } from "@hugeicons/react";
-import {
-  getUserNotifications,
-  markNotificationRead,
-  markAllNotificationsRead,
-} from "@/lib/actions/notifications";
+import { getUserNotifications, markNotificationsSeen } from "@/lib/actions/notifications";
 import { NOTIFICATION_TAGS } from "@/lib/notification-tags";
 import type { DashboardNotificationItem as NotificationItem } from "@/types/dashboard-notifications";
 
@@ -40,7 +39,8 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 export default function NotificationsPage() {
-  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const mounted = useMounted();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -61,28 +61,19 @@ export default function NotificationsPage() {
       page,
       limit: 15,
     });
-    setNotifications(result.notifications as unknown as NotificationItem[]);
+    const items = result.notifications as unknown as NotificationItem[];
+    setNotifications(items);
     setTotal(result.total);
     setPages(result.pages);
     setCurrentPage(result.currentPage);
-  }
 
-  function handleMarkRead(id: string) {
-    startTransition(async () => {
-      await markNotificationRead(id);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === id ? { ...n, read: true, readAt: new Date() } : n,
-        ),
-      );
-    });
-  }
-
-  function handleMarkAllRead() {
-    startTransition(async () => {
-      await markAllNotificationsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true, readAt: new Date() })));
-    });
+    // Seeing a notification counts as reading it. They stay highlighted as "New"
+    // for this visit; the sidebar badge refreshes right away.
+    const unseen = items.filter((n) => !n.read).map((n) => n.id);
+    if (unseen.length) {
+      await markNotificationsSeen(unseen);
+      router.refresh();
+    }
   }
 
   function toggleExpand(id: string) {
@@ -109,88 +100,77 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight lg:text-[28px]">
             Notifications
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="mt-1 text-[15px] text-muted-foreground">
             {total} notification{total !== 1 ? "s" : ""}{" "}
             {unreadCount > 0 && (
-              <span className="text-primary font-medium">
-                — {unreadCount} unread
+              <span className="font-bold text-brand">
+                — {unreadCount} new
               </span>
             )}
           </p>
         </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs gap-1.5 h-7"
-            onClick={handleMarkAllRead}
-            disabled={isPending}
-          >
-            <CheckCheck className="h-3 w-3" />
-            Mark all read
-          </Button>
-        )}
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
-          <Filter className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-muted-foreground">
             Filter
           </span>
         </div>
-        <Select value={tagFilter} onValueChange={setTagFilter}>
-          <SelectTrigger className="h-7 w-36 text-xs">
-            <SelectValue placeholder="All tags" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All tags</SelectItem>
-            {NOTIFICATION_TAGS.map((t) => (
-              <SelectItem key={t} value={t}>
-                <span className="capitalize">{t}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          variant={unreadOnly ? "default" : "outline"}
-          size="sm"
-          className="h-7 text-xs gap-1"
+        {/* Drawn only in the browser: the dropdown's generated ids otherwise differ from the server's. */}
+        {mounted ? (
+          <Select value={tagFilter} onValueChange={setTagFilter}>
+            <SelectTrigger className="h-10 w-40 rounded-full border text-sm font-semibold">
+              <SelectValue placeholder="All tags" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tags</SelectItem>
+              {NOTIFICATION_TAGS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  <span className="capitalize">{t}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <span aria-hidden className="h-10 w-40 rounded-full border border-border" />
+        )}
+        <button
+          className={cn(
+            "flex h-10 items-center gap-1.5 rounded-full border px-3 text-sm font-bold transition-colors",
+            unreadOnly ? "border-transparent bg-brand-soft text-brand" : "border-border text-muted-foreground hover:bg-muted"
+          )}
           onClick={() => setUnreadOnly(!unreadOnly)}
         >
-          <Bell className="h-3 w-3" />
+          <Bell className="h-4 w-4" />
           Unread only
-        </Button>
+        </button>
       </div>
 
       {/* Notification list */}
       {notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border">
-          <Inbox className="h-10 w-10 text-muted-foreground/20 mb-4" />
-          <h3 className="text-sm font-medium">No notifications</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            {unreadOnly
-              ? "You've read all your notifications."
-              : "You're all caught up. Nothing to see here."}
-          </p>
-        </div>
+        <EmptyState
+          icon={<Inbox className="h-8 w-8" />}
+          title="No notifications"
+          description={unreadOnly ? "You've read all your notifications." : "You're all caught up."}
+        />
       ) : (
-        <div className="border border-border divide-y divide-border">
+        <Panel className="divide-y divide-border overflow-hidden">
           {notifications.map((n) => {
             const isExpanded = expandedId === n.id;
             return (
               <div
                 key={n.id}
-                className={`transition-colors ${!n.read ? "bg-primary/2" : ""}`}
+                className={cn("transition-colors", !n.read && "bg-brand-soft/50")}
               >
                 <button
                   onClick={() => {
                     toggleExpand(n.id);
-                    if (!n.read) handleMarkRead(n.id);
                   }}
                   className="w-full text-left p-4 hover:bg-muted/30 transition-colors"
                 >
@@ -198,34 +178,34 @@ export default function NotificationsPage() {
                     {/* Unread indicator */}
                     <div className="pt-1 shrink-0">
                       {!n.read ? (
-                        <div className="h-2 w-2 bg-primary" />
+                        <div className="h-2.5 w-2.5 rounded-full bg-brand" />
                       ) : (
-                        <div className="h-2 w-2" />
+                        <div className="h-2.5 w-2.5" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <h3
-                          className={`text-xs truncate ${!n.read ? "font-semibold" : "font-medium text-muted-foreground"}`}
+                          className={cn("truncate text-[15px]", !n.read ? "font-bold" : "font-semibold text-muted-foreground")}
                         >
                           {n.title}
                         </h3>
                         <span
-                          className={`text-[8px] font-bold uppercase tracking-wider px-1 py-px shrink-0 ${TAG_COLORS[n.tag] ?? TAG_COLORS.general}`}
+                          className={cn("shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", TAG_COLORS[n.tag] ?? TAG_COLORS.general)}
                         >
                           {n.tag}
                         </span>
                         {n.attachmentUrl && (
-                          <Paperclip className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                          <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground truncate">
+                      <p className="truncate text-sm text-muted-foreground">
                         {n.description}
                       </p>
                     </div>
 
-                    <span className="text-[10px] text-muted-foreground shrink-0">
+                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">
                       {timeAgo(n.createdAt)}
                     </span>
                   </div>
@@ -234,7 +214,7 @@ export default function NotificationsPage() {
                 {isExpanded && (
                   <div className="px-4 pb-4 pl-11 space-y-3">
                     <div className="border-l-2 border-border pl-3">
-                      <p className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">
+                      <p className="whitespace-pre-wrap text-[15px] leading-relaxed">
                         {n.description}
                       </p>
                     </div>
@@ -244,30 +224,20 @@ export default function NotificationsPage() {
                         href={n.attachmentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors"
+                        className={pressable("outline", "px-3 py-2 normal-case")}
                       >
-                        <Download className="h-3 w-3 text-muted-foreground" />
+                        <Download className="h-4 w-4" />
                         <span>{n.attachmentName ?? "Download attachment"}</span>
                       </a>
                     )}
 
                     <div className="flex items-center gap-2">
                       {!n.read ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 text-[10px] gap-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMarkRead(n.id);
-                          }}
-                          disabled={isPending}
-                        >
-                          <Check className="h-2.5 w-2.5" />
-                          Mark as read
-                        </Button>
+                        <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-foreground">
+                          New
+                        </span>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">
                           <Check className="h-2.5 w-2.5" />
                           Read
                         </span>
@@ -278,13 +248,13 @@ export default function NotificationsPage() {
               </div>
             );
           })}
-        </div>
+        </Panel>
       )}
 
       {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-sm font-semibold text-muted-foreground">
             Page {currentPage} of {pages}
           </p>
           <div className="flex gap-1">
