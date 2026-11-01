@@ -50,17 +50,20 @@ export async function hasPro(): Promise<boolean> {
   return (await getSubscriptionStatus(session.user.id)).isSubscribed;
 }
 
-/** The Polar product to check out for each billing period, matched by its interval. */
+/** Names of the Excelio products in Polar. The store also holds other products, so match these exactly. */
+export const PRO_PRODUCT_NAMES: Record<Billing, string> = {
+  monthly: "Excelio Pro Monthly",
+  yearly: "Excelio Pro Yearly",
+  lifetime: "Excelio Pro Lifetime",
+};
+
+/** The Polar product to check out for each billing period, found by name. */
 export async function getProProducts(): Promise<Partial<Record<Billing, string>>> {
   const { products } = await listProductsForPricing().catch(() => ({ products: [] }));
   const out: Partial<Record<Billing, string>> = {};
-  for (const p of products) {
-    if (!p.isRecurring) {
-      if (!out.lifetime) out.lifetime = p.id;
-      continue;
-    }
-    if (p.recurringInterval === "month" && !out.monthly) out.monthly = p.id;
-    if (p.recurringInterval === "year" && !out.yearly) out.yearly = p.id;
+  for (const billing of Object.keys(PRO_PRODUCT_NAMES) as Billing[]) {
+    const match = products.find((p) => p.name.trim().toLowerCase() === PRO_PRODUCT_NAMES[billing].toLowerCase());
+    if (match) out[billing] = match.id;
   }
   return out;
 }
