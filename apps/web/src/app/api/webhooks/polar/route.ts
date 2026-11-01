@@ -49,16 +49,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    // Polar uses snake_case in webhook payloads
-    const customer = (data.customer ?? data) as { email?: string } | undefined;
-    const email = (customer?.email ?? (data as { email?: string }).email) as string | undefined;
-    if (!email?.trim()) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[Polar webhook] No customer email in payload:", JSON.stringify(data, null, 2).slice(0, 500));
-      }
-      return NextResponse.json({ received: true });
-    }
-
     const subId = String(data.id ?? data.subscription_id ?? "");
     const status = String(data.status ?? "active");
     const periodEndRaw = data.current_period_end ?? data.currentPeriodEnd;
@@ -67,13 +57,9 @@ export async function POST(req: NextRequest) {
     const productId = (data.product_id ?? data.productId) as string | undefined;
     const customerId = String(data.customer_id ?? data.customerId ?? "");
 
-    const emailNorm = email.toLowerCase().trim();
-    const user = await prisma.user.findUnique({
-      where: { email: emailNorm },
-      select: { id: true },
-    });
-
+    const user = await findPayingUser(data);
     if (!user || !subId) {
+      console.warn("[Polar webhook] No matching user for", type, subId);
       return NextResponse.json({ received: true });
     }
 
@@ -136,6 +122,29 @@ function verifyPolarEvent(
   return null;
 }
 
+/**
+ * The app user a subscription or order belongs to. Checkout sets Polar's external customer
+ * id to our user id, so match on that first: the buyer can change the email on the checkout
+ * page, and an email-only match would then leave them paid but locked out. Email is the
+ * fallback for customers created before external ids were set. Handles both Polar's
+ * snake_case payload and the SDK's camelCase parse.
+ */
+async function findPayingUser(data: Record<string, unknown>): Promise<{ id: string } | null> {
+  const customer = (data.customer ?? {}) as {
+    external_id?: string | null;
+    externalId?: string | null;
+    email?: string | null;
+  };
+  const externalId = customer.external_id ?? customer.externalId;
+  if (externalId) {
+    const byId = await prisma.user.findUnique({ where: { id: externalId }, select: { id: true } });
+    if (byId) return byId;
+  }
+  const email = (customer.email ?? (data.email as string | undefined))?.toLowerCase().trim();
+  if (!email) return null;
+  return prisma.user.findUnique({ where: { email }, select: { id: true } });
+}
+
 /** Far-future end date for lifetime access. */
 const LIFETIME_END = new Date("2999-12-31T00:00:00Z");
 
@@ -149,13 +158,14 @@ async function handleLifetimeOrder(type: string, data: Record<string, unknown>) 
   const recurring = product.is_recurring ?? product.isRecurring ?? false;
   if ((reason && reason !== "purchase") || recurring) return;
 
-  const customer = (data.customer ?? {}) as { email?: string };
-  const email = customer.email?.toLowerCase().trim();
   const orderId = String(data.id ?? "");
-  if (!email || !orderId) return;
+  if (!orderId) return;
 
-  const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (!user) return;
+  const user = await findPayingUser(data);
+  if (!user) {
+    console.warn("[Polar webhook] No matching user for order", orderId);
+    return;
+  }
 
   if (type === "order.refunded") {
     await prisma.subscription.updateMany({

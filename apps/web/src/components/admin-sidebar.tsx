@@ -24,6 +24,7 @@ import {
   StarIcon as Star,
   BookOpen01Icon as Book,
   ChartLineData01Icon as Insights,
+  CrownIcon as Crown,
 } from "@hugeicons/react";
 
 type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
@@ -54,7 +55,13 @@ const adminGroups: { title: string; items: NavItem[] }[] = [
       { name: "Blog", href: "/admin/blog", icon: FileText },
     ],
   },
-  { title: "Billing", items: [{ name: "Products", href: "/admin/products", icon: CreditCard }] },
+  {
+    title: "Billing",
+    items: [
+      { name: "Paid Users", href: "/admin/paid-users", icon: Crown },
+      { name: "Products", href: "/admin/products", icon: CreditCard },
+    ],
+  },
   {
     title: "Settings",
     items: [

@@ -277,3 +277,57 @@ export async function updatePolarProduct(
     return { error: msg };
   }
 }
+
+export type PaidUser = {
+  userId: string;
+  name: string;
+  email: string;
+  image: string | null;
+  plan: "monthly" | "yearly" | "lifetime" | "unknown";
+  status: string;
+  active: boolean;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string;
+  since: string;
+  polarCustomerId: string;
+};
+
+/** Everyone with a Pro subscription or lifetime purchase, newest first. Admins only. */
+export async function getPaidUsers(): Promise<PaidUser[]> {
+  await requireAdmin();
+  const { getProProducts } = await import("@/lib/pro-access");
+  const [subs, products] = await Promise.all([
+    prisma.subscription.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true, email: true, image: true } } },
+    }),
+    getProProducts().catch(() => ({}) as Partial<Record<"monthly" | "yearly" | "lifetime", string>>),
+  ]);
+  const now = new Date();
+
+  return subs.map((s) => {
+    const plan: PaidUser["plan"] =
+      s.status === "lifetime" || s.polarSubscriptionId.startsWith("order_")
+        ? "lifetime"
+        : s.productId && s.productId === products.yearly
+          ? "yearly"
+          : s.productId && s.productId === products.monthly
+            ? "monthly"
+            : "unknown";
+    const active =
+      s.status === "lifetime" || ((s.status === "active" || s.status === "trialing") && s.currentPeriodEnd > now);
+    return {
+      userId: s.userId,
+      name: s.user.name,
+      email: s.user.email,
+      image: s.user.image,
+      plan,
+      status: s.status,
+      active,
+      cancelAtPeriodEnd: s.cancelAtPeriodEnd,
+      currentPeriodEnd: s.currentPeriodEnd.toISOString(),
+      since: s.createdAt.toISOString(),
+      polarCustomerId: s.polarCustomerId,
+    };
+  });
+}

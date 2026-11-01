@@ -13,10 +13,15 @@ export async function getSubscriptionStatus(userId: string): Promise<Subscriptio
     return { isSubscribed: false, subscription: null };
   }
 
-  const now = new Date();
+  // Monthly/yearly plans stay open until their period ends. A renewal moves the end date
+  // forward via the Polar webhook; if the payment fails Polar changes the status (past_due,
+  // canceled, revoked) and access locks. The short grace covers a renewal webhook arriving
+  // a little after the old period ends, so paying learners aren't locked out for minutes.
+  const RENEWAL_GRACE_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
   const isActive =
     ACTIVE_STATUSES.includes(sub.status as (typeof ACTIVE_STATUSES)[number]) &&
-    sub.currentPeriodEnd > now;
+    sub.currentPeriodEnd.getTime() + RENEWAL_GRACE_MS > now;
 
   return {
     isSubscribed: isActive,
