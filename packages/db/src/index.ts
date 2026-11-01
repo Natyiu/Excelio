@@ -3,11 +3,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "../prisma/generated/client";
 
 function resolveConnectionString(): string {
+  // The app talks to the database through the pooled URL; DIRECT_URL is for migrations
+  // (prisma.config.ts) and is only used here when no pooled URL is set.
   const candidates = [
-    process.env.DIRECT_URL,
-    process.env.POSTGRES_URL_NON_POOLING,
     process.env.DATABASE_URL,
     process.env.POSTGRES_URL,
+    process.env.DIRECT_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
   ];
 
   for (const value of candidates) {
@@ -24,8 +26,9 @@ function resolveConnectionString(): string {
 }
 
 // Supabase's session pooler allows only a handful of clients (15 on this plan), so
-// keep this process's pool small and requests will queue rather than fail.
-const POOL_MAX = Number(process.env.DATABASE_POOL_MAX ?? 5);
+// keep each process's pool small and requests will queue rather than fail. On Vercel
+// every request can start a new instance, so each one holds a single connection.
+const POOL_MAX = Number(process.env.DATABASE_POOL_MAX ?? (process.env.VERCEL ? 1 : 5));
 
 function createClient() {
   const adapter = new PrismaPg({ connectionString: resolveConnectionString(), max: POOL_MAX });
