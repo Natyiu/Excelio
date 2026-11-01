@@ -16,13 +16,25 @@ export async function POST(req: NextRequest) {
       select: { polarWebhookSecret: true },
     });
 
-    const secret = (settings?.polarWebhookSecret || process.env.POLAR_WEBHOOK_SECRET)?.trim();
-    if (!secret) {
+    // Accept either the admin-panel secret or the env var, so a stale value in one place
+    // can't silently block deliveries signed with the other.
+    const candidates = [
+      { source: "admin settings", secret: settings?.polarWebhookSecret?.trim() },
+      { source: "POLAR_WEBHOOK_SECRET env", secret: process.env.POLAR_WEBHOOK_SECRET?.trim() },
+    ].filter((c): c is { source: string; secret: string } => !!c.secret);
+    if (candidates.length === 0) {
       console.error("[Polar webhook] No webhook secret configured");
       return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
     }
 
-    const event = validateEvent(body, headers, secret);
+    const event = verifyPolarEvent(body, headers, candidates);
+    if (!event) {
+      console.error(
+        "[Polar webhook] Invalid signature. Tried:",
+        candidates.map((c) => `${c.source} (${c.secret.length} chars, starts ${c.secret.slice(0, 10)})`).join("; "),
+      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
     const type = (event as { type?: string }).type;
     const data = event.data as Record<string, unknown> | undefined;
 
@@ -100,6 +112,28 @@ export async function POST(req: NextRequest) {
     console.error("[Polar webhook]", e);
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
+}
+
+/**
+ * Returns the event if any secret's signature matches, otherwise null. The SDK verifies the
+ * signature first and only then parses the payload against its schemas; if that parsing fails
+ * (an event type or API version newer than this SDK knows), the signature was still valid, so
+ * fall back to the raw JSON instead of answering 500 and getting the endpoint disabled.
+ */
+function verifyPolarEvent(
+  body: string,
+  headers: Record<string, string>,
+  candidates: { secret: string }[],
+): { type?: string; data?: unknown } | null {
+  for (const { secret } of candidates) {
+    try {
+      return validateEvent(body, headers, secret) as { type?: string; data?: unknown };
+    } catch (e) {
+      if (e instanceof WebhookVerificationError) continue;
+      return JSON.parse(body);
+    }
+  }
+  return null;
 }
 
 /** Far-future end date for lifetime access. */
