@@ -57,12 +57,24 @@ export const PRO_PRODUCT_NAMES: Record<Billing, string> = {
   lifetime: "Excelio Pro Lifetime",
 };
 
-/** The Polar product to check out for each billing period, found by name. */
+/** "Excelio Pro - Monthly" and "excelio pro monthly" compare equal. */
+const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * The Polar product to check out for each billing period. Matched by name, ignoring
+ * spaces, dashes and case; failing that, the Excelio product with the right billing
+ * (monthly, yearly or one-time). Products without "Excelio" in the name are never used.
+ */
 export async function getProProducts(): Promise<Partial<Record<Billing, string>>> {
   const { products } = await listProductsForPricing().catch(() => ({ products: [] }));
+  const excelio = products.filter((p) => normalise(p.name).includes("excelio"));
   const out: Partial<Record<Billing, string>> = {};
   for (const billing of Object.keys(PRO_PRODUCT_NAMES) as Billing[]) {
-    const match = products.find((p) => p.name.trim().toLowerCase() === PRO_PRODUCT_NAMES[billing].toLowerCase());
+    const byName = excelio.find((p) => normalise(p.name) === normalise(PRO_PRODUCT_NAMES[billing]));
+    const byBilling = excelio.find((p) =>
+      billing === "lifetime" ? !p.isRecurring : p.isRecurring && p.recurringInterval === (billing === "monthly" ? "month" : "year")
+    );
+    const match = byName ?? byBilling;
     if (match) out[billing] = match.id;
   }
   return out;
