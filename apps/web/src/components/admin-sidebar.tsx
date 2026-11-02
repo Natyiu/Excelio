@@ -25,6 +25,7 @@ import {
   ChartLineData01Icon as Insights,
   CrownIcon as Crown,
 } from "@hugeicons/react";
+import { BrandLogo } from "@/components/brand-logo";
 
 type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
 
@@ -98,7 +99,7 @@ export function AdminSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 shrink-0 flex-col border-r border-border/60 bg-background px-3 py-5 md:flex">
       <Link href="/admin" className="mb-5 flex items-center gap-2 px-3">
-        <span className="text-[24px] font-bold tracking-tight text-brand">Excelio</span>
+        <span className="inline-flex items-center gap-[0.3em] text-[24px] font-bold tracking-tight text-brand"><BrandLogo />Excelio</span>
         <span className="rounded-md bg-brand-soft px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand">Admin</span>
       </Link>
 

@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useMounted } from "@/lib/use-mounted";
 import { IconTile, Panel, ProgressBar } from "@/components/game-ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BrandLogo } from "@/components/brand-logo";
 
 type NavItem = {
   label: string;
@@ -32,6 +33,8 @@ type NavItem = {
   /** Extra path prefixes that should also mark this item active. */
   match?: string[];
 };
+
+const PROFILE_HREF = "/dashboard/profile";
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Learn", href: "/dashboard", icon: Home, match: ["/dashboard/learn"] },
@@ -42,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Profile", href: "/dashboard/profile", icon: User },
 ];
+const profileItem = NAV_ITEMS.find((item) => item.href === PROFILE_HREF);
 
 // Secondary pages are reached from the More page instead of the main nav.
 const MORE_PAGES = [
@@ -109,12 +113,14 @@ export function ExcelDashboardShell({
     <div className="flex min-h-screen bg-background font-apple text-foreground antialiased">
       {/* ── Sidebar (desktop) ── */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
-        <Link href="/dashboard" className="mb-8 px-4 text-[26px] font-bold tracking-tight text-brand">
+        <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[26px] font-bold tracking-tight text-brand">
+          <BrandLogo />
           Excelio
         </Link>
 
         <nav className="flex-1 space-y-1">
-          {NAV_ITEMS.map((item) => (
+          {/* Profile sits at the bottom of the sidebar instead, above the theme toggle. */}
+          {NAV_ITEMS.filter((item) => item.href !== PROFILE_HREF).map((item) => (
             <SidebarLink
               key={item.href}
               item={item}
@@ -125,6 +131,7 @@ export function ExcelDashboardShell({
           <SidebarLink item={{ label: "More", href: "/dashboard/more", icon: More }} active={moreActive} />
         </nav>
 
+        {profileItem && <SidebarLink item={profileItem} active={isActive(pathname, profileItem)} />}
         <button
           type="button"
           onClick={toggleTheme}
@@ -143,7 +150,8 @@ export function ExcelDashboardShell({
       <div className="flex min-w-0 flex-1 flex-col pb-24 lg:pb-0">
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b-2 border-border bg-background px-4 lg:hidden">
-          <Link href="/dashboard" className="text-xl font-bold tracking-tight text-brand">
+          <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] text-xl font-bold tracking-tight text-brand">
+            <BrandLogo />
             Excelio
           </Link>
           <StatRow stats={stats} />

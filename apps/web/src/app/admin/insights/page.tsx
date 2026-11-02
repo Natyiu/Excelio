@@ -122,7 +122,8 @@ export default async function AdminInsightsPage() {
           {data.hardest.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">Not enough attempts yet.</p>
           ) : (
-            <table className="mt-3 w-full text-sm">
+            <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[420px] text-sm">
               <thead className="text-left text-[13px] text-muted-foreground">
                 <tr>
                   <th className="pb-2 font-medium">Lesson</th>
@@ -142,6 +143,7 @@ export default async function AdminInsightsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </section>
 

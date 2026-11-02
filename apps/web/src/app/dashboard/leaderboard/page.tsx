@@ -91,7 +91,7 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
       {/* Podium: 2nd, 1st, 3rd */}
       <section>
         <SectionTitle>Top three</SectionTitle>
-        <div className="grid grid-cols-3 items-end gap-3 pt-6">
+        <div className="grid grid-cols-3 items-end gap-2 pt-6 sm:gap-3 [&>*]:min-w-0">
           {[1, 0, 2].map((i) => (
             <PodiumSpot key={i} entry={top[i]} spot={PODIUM[i]!} />
           ))}

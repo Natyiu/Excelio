@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { VerifyEmailForm } from "@/components/verify-email-form";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default async function VerifyEmailPage() {
   const session = await auth.api.getSession({
@@ -40,7 +41,8 @@ export default async function VerifyEmailPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border/40">
         <div className="max-w-2xl mx-auto px-4 flex h-12 items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-tight text-brand">
+          <Link href="/" className="inline-flex items-center gap-[0.3em] text-xl font-bold tracking-tight text-brand">
+            <BrandLogo />
             Excelio
           </Link>
           <Link

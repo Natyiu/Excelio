@@ -361,7 +361,7 @@ export default function AdminSiteSettingsPage() {
             title="Waitlist Entries"
             description={`${entries.length} signups`}
           >
-            <div className="max-h-64 overflow-y-auto border border-border rounded-xl">
+            <div className="max-h-64 overflow-auto border border-border rounded-xl">
               {entries.length === 0 ? (
                 <p className="p-4 text-sm text-muted-foreground text-center">No entries yet</p>
               ) : (

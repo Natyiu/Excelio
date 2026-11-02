@@ -22,6 +22,8 @@ import { SheetDemo } from "@/components/learning/sheet-demo";
 import { pressable } from "@/components/game-ui";
 import { ACHIEVEMENT_ICONS, achievementColour } from "@/components/achievement-icons";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
+import { SITE_URL } from "@/lib/site-url";
 
 // The demo in the "learn by doing" section: a receipt that gets totalled.
 const DEMO = [
@@ -64,21 +66,21 @@ const REASONS = [
   {
     icon: Pointer,
     title: "Learn by doing, not watching",
-    body: "Type every formula into a real spreadsheet instead of scrolling through video tutorials. VLOOKUP and XLOOKUP click because you've used them yourself.",
+    body: "Type every Excel formula into a real spreadsheet instead of scrolling through video tutorials. VLOOKUP and XLOOKUP click because you've used them yourself.",
     tag: "Beginner friendly",
     colour: { base: "#1d9a52", deep: "#0d6b37" },
   },
   {
     icon: Flame,
     title: "Five minutes a day",
-    body: "Bite-sized Excel lessons, streaks and daily challenges turn learning formulas into a habit you'll actually keep.",
+    body: "Bite-sized Excel lessons, practice exercises and daily challenges turn learning Excel into a habit you'll actually keep.",
     tag: "Daily habit",
     colour: { base: "#d97706", deep: "#92400e" },
   },
   {
     icon: Zap,
     title: "Skills you'll use at work",
-    body: "From SUMIFS and IF to FILTER, dynamic arrays and LAMBDA, build reports in minutes instead of afternoons.",
+    body: "From IF and SUMIFS to FILTER, dynamic arrays and LAMBDA, learn the Excel skills employers ask for and build reports in minutes, not afternoons.",
     tag: "Beginner to advanced",
     colour: { base: "#7c3aed", deep: "#5b21b6" },
   },
@@ -93,8 +95,8 @@ const STEP_COLOURS = [
 
 const lessonCount = COURSES.reduce((n, c) => n + c.lessons.length, 0);
 
-const SEO_TITLE = "Excelio: Learn Excel Online, Free | Interactive Excel Course";
-const SEO_DESCRIPTION = `Learn Excel by doing, not watching. ${lessonCount} bite-sized, hands-on lessons in a real spreadsheet: formulas, SUM, IF, SUMIFS, VLOOKUP and XLOOKUP, FILTER, dynamic arrays and LAMBDA. Beginner to advanced. Start free.`;
+const SEO_TITLE = "Learn Excel Online Free: Interactive Excel Course | Excelio";
+const SEO_DESCRIPTION = `Learn Excel online, free to start: ${lessonCount} interactive lessons in a real spreadsheet. Excel formulas, IF, VLOOKUP, XLOOKUP and more, beginner to advanced.`;
 
 export const metadata: Metadata = {
   title: SEO_TITLE,
@@ -102,18 +104,23 @@ export const metadata: Metadata = {
   keywords: [
     "learn Excel",
     "learn Excel online",
+    "learn Excel online free",
     "Excel course",
     "free Excel course",
+    "online Excel course",
+    "Excel training",
+    "Excel tutorial",
     "Excel formulas",
     "Excel for beginners",
     "advanced Excel",
-    "XLOOKUP",
-    "VLOOKUP",
     "Excel practice",
     "Excel exercises",
+    "VLOOKUP",
+    "XLOOKUP",
+    "Excel functions",
   ],
   alternates: { canonical: "/" },
-  openGraph: { title: SEO_TITLE, description: SEO_DESCRIPTION, type: "website" },
+  openGraph: { title: SEO_TITLE, description: SEO_DESCRIPTION, type: "website", url: "/", siteName: "Excelio" },
   twitter: { card: "summary_large_image", title: SEO_TITLE, description: SEO_DESCRIPTION },
 };
 
@@ -121,14 +128,106 @@ export const metadata: Metadata = {
 const COURSE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "Course",
-  name: "Excel: Beginner to Advanced",
+  name: "Learn Excel Online: Beginner to Advanced Excel Course",
   description: SEO_DESCRIPTION,
-  provider: { "@type": "Organization", name: "Excelio" },
+  url: `${SITE_URL}/`,
+  inLanguage: "en",
+  provider: { "@type": "Organization", name: "Excelio", sameAs: SITE_URL },
   educationalLevel: "Beginner to Advanced",
   teaches: COURSES.map((c) => c.title),
   hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: `${lessonCount} lessons` },
-  offers: { "@type": "Offer", category: "Free", price: 0, priceCurrency: "USD" },
+  // The first chapters are free; Pro unlocks the rest.
+  offers: { "@type": "Offer", category: "Partially Free", price: 0, priceCurrency: "USD" },
 };
+
+/** Who publishes the site, and the site itself, for search engines. */
+const SITE_SCHEMA = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Excelio",
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Excelio",
+    url: SITE_URL,
+  },
+];
+
+/** Questions people search for, answered on the page and marked up as an FAQ. */
+const FAQS = [
+  {
+    q: "What is the best way to learn Excel online?",
+    a: "By using it. Watching tutorials feels productive, but formulas only stick once you type them yourself. Excelio puts every lesson inside a real spreadsheet, so you practise Excel formulas and functions from the first minute instead of watching someone else do it.",
+  },
+  {
+    q: "Can I learn Excel online for free?",
+    a: "Yes. The first chapters of the Excelio Excel course are free, with no credit card: Excel basics, entering data and your first formulas. Excelio Pro unlocks the full course, from lookups and dynamic arrays to LAMBDA and Power Query.",
+  },
+  {
+    q: "Is this Excel course good for beginners?",
+    a: "Yes. It starts from zero: what a cell, row and column are, how to enter data and how to write your first formula. Each lesson teaches one idea at a time, so complete beginners can follow along without feeling lost.",
+  },
+  {
+    q: "How long does it take to learn Excel?",
+    a: `Most people learn the Excel basics in a week of short daily practice. Each Excelio lesson takes about five minutes, and the full course has ${lessonCount} lessons across ${COURSES.length} chapters, so you can go from beginner to advanced Excel in a few weeks at your own pace.`,
+  },
+  {
+    q: "Which Excel formulas and functions will I learn?",
+    a: "The ones you'll use at work: SUM, AVERAGE, IF, AND, OR, COUNTIF, SUMIFS, VLOOKUP, XLOOKUP and INDEX MATCH, plus sorting, filtering, removing duplicates, conditional formatting, Excel tables, dynamic arrays like FILTER, SORT and UNIQUE, and LET and LAMBDA.",
+  },
+  {
+    q: "Do I need Microsoft Excel installed?",
+    a: "No. Every lesson runs in a spreadsheet in your browser, on a computer or phone. What you learn works the same in Microsoft Excel, Excel for the web and Microsoft 365, and most formulas work in Google Sheets too.",
+  },
+  {
+    q: "How is Excelio different from Excel video tutorials?",
+    a: "There are no videos to sit through. Instead of watching a tutorial and forgetting it, you solve short Excel exercises, get instant feedback on your formula, and build the habit with streaks, XP and daily challenges.",
+  },
+];
+
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+};
+
+/** Footer link columns. Only pages that exist; add contact details or socials here when you have them. */
+const FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
+  {
+    title: "Learn",
+    links: [
+      { label: "Start learning free", href: "/try" },
+      { label: "How it works", href: "#how" },
+      { label: "Curriculum", href: "#path" },
+      { label: "Pricing", href: "/pricing" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Blog", href: "/blog" },
+      { label: "FAQ", href: "#faq" },
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      { label: "Log in", href: "/login" },
+      { label: "Sign up", href: "/signup" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy", href: "/legal/privacy" },
+      { label: "Terms of use", href: "/legal/terms" },
+    ],
+  },
+];
 
 export default async function LandingPage() {
   const session = await auth.api.getSession({ headers: await headers() }).catch(() => null);
@@ -144,12 +243,13 @@ export default async function LandingPage() {
 
   return (
     <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(COURSE_SCHEMA) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([COURSE_SCHEMA, ...SITE_SCHEMA, FAQ_SCHEMA]) }} />
     <div className="min-h-screen overflow-x-clip bg-background font-apple text-foreground antialiased">
       {/* ── Header ── */}
       <header className="sticky top-0 z-40 border-b-2 border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
-          <Link href="/" className="text-[26px] font-bold tracking-tight text-brand">
+          <Link href="/" className="inline-flex items-center gap-[0.3em] text-[30px] font-bold tracking-tight text-brand">
+            <BrandLogo className="h-[1.5em] -rotate-[10deg]" />
             Excelio
           </Link>
           <nav className="flex items-center gap-2">
@@ -177,15 +277,18 @@ export default async function LandingPage() {
           <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center md:px-6 md:pt-24 lg:pt-[clamp(2.5rem,7vh,6rem)]">
             <h1 className="mx-auto max-w-4xl text-balance text-[40px] font-extrabold leading-[1.05] tracking-tight md:text-[68px]">
               Learn{" "}
-              <span className="relative inline-block text-brand">
-                <span aria-hidden className="absolute inset-x-[-4px] bottom-[0.08em] h-[0.38em] rounded-md bg-brand/20" />
-                <span className="relative">Excel</span>
+              <span className="whitespace-nowrap">
+                <BrandLogo className="mr-[0.14em] inline-block h-[0.95em] -rotate-[10deg] align-[-0.12em]" />
+                <span className="relative inline-block text-brand">
+                  <span aria-hidden className="absolute inset-x-[-4px] bottom-[0.08em] h-[0.38em] rounded-md bg-brand/20" />
+                  <span className="relative">Excel</span>
+                </span>
               </span>{" "}
               by actually using it.
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Bite-sized lessons inside a real spreadsheet. Type the formula, see it work, and remember it, from your first cell to
-              LAMBDA.
+              A free-to-start, interactive Excel course for beginners to advanced. Bite-sized lessons inside a real spreadsheet: type
+              the formula, see it work, and remember it, from your first cell to XLOOKUP and LAMBDA.
             </p>
 
             <Link href={start.href as never} className={pressable("brand", "mt-9 px-12 py-4 text-lg font-bold md:px-16 md:text-xl")}>
@@ -252,8 +355,8 @@ export default async function LandingPage() {
           <div className="mx-auto max-w-6xl px-4 py-24 md:px-6">
             <SectionHeading
               eyebrow="Why Excelio"
-              title="Why learners choose Excelio"
-              sub="The fastest way to learn Excel online is to actually use it."
+              title="The fastest way to learn Excel online"
+              sub="Excel training that has you practising in a real spreadsheet, not watching a video player."
             />
             <div className="mt-14 grid gap-5 md:grid-cols-3">
               {REASONS.map((r) => (
@@ -284,7 +387,7 @@ export default async function LandingPage() {
         {testimonials.length > 0 && (
           <section className="border-t border-border">
             <div className="mx-auto max-w-6xl px-4 py-24 md:px-6">
-              <SectionHeading eyebrow="Learners" title="What people are saying" sub="From people learning Excel with Excelio." />
+              <SectionHeading eyebrow="Learners" title="What Excel learners are saying" sub="From people learning Excel online with Excelio." />
               <div className={cn("mx-auto mt-14 grid gap-5", testimonials.length === 1 ? "max-w-md" : testimonials.length === 2 ? "max-w-3xl md:grid-cols-2" : "md:grid-cols-3")}>
                 {testimonials.map((t, i) => {
                   const c = QUOTE_COLOURS[i % QUOTE_COLOURS.length]!;
@@ -313,7 +416,7 @@ export default async function LandingPage() {
         {/* ── How it works ── */}
         <section id="how" className="scroll-mt-20 border-t border-border">
           <div className="mx-auto max-w-5xl px-4 py-24 md:px-6">
-            <SectionHeading eyebrow="How it works" title="Five minutes, one new skill" sub="Every lesson follows the same simple loop." />
+            <SectionHeading eyebrow="How it works" title="Learn Excel in five minutes a day" sub="Every Excel lesson follows the same simple loop: see it, try it, keep it." />
             <ol className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
               {STEPS.map((step, i) => {
                 const c = STEP_COLOURS[i]!;
@@ -363,8 +466,8 @@ export default async function LandingPage() {
         {/* ── Motivation: one panel, four quiet cells ── */}
         <section className="border-t border-border">
           <div className="mx-auto max-w-5xl px-4 py-24 md:px-6">
-            <SectionHeading eyebrow="Stay motivated" title="A habit you'll actually keep" sub="Small wins every day add up to real skill." />
-            <div className="mt-14 grid gap-5 md:grid-cols-2">
+            <SectionHeading eyebrow="Stay motivated" title="Excel practice you'll actually keep up" sub="Small wins every day add up to real Excel skills." />
+            <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 [&>*]:min-w-0">
               <Feature icon={Flame} colour="#ea580c" title="Streaks" body="Practise a little each day and keep the chain going.">
                 <StreakWeek />
               </Feature>
@@ -384,7 +487,7 @@ export default async function LandingPage() {
         {/* ── Learning path: the whole course, laid out like a sheet ── */}
         <section id="path" className="scroll-mt-20 border-t border-border">
           <div className="mx-auto max-w-5xl px-4 py-24 md:px-6">
-            <SectionHeading eyebrow="Curriculum" title="From your first cell to LAMBDA" sub="Three stages, each building on the last." />
+            <SectionHeading eyebrow="Curriculum" title="The Excel course, beginner to advanced" sub="Three stages, from Excel basics and formulas to lookups, dynamic arrays, LAMBDA and Power Query." />
             <div className="mt-14 grid gap-6 lg:grid-cols-3">
               {STAGES.map((st) => {
                 const chapters = COURSES.filter((c) => c.difficulty === st.id);
@@ -415,14 +518,32 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ── FAQ: answers the questions people search for ── */}
+        <section id="faq" className="scroll-mt-20 border-t border-border">
+          <div className="mx-auto max-w-3xl px-4 py-24 md:px-6">
+            <SectionHeading eyebrow="FAQ" title="Learning Excel: your questions answered" sub="Everything you need to know before you start." />
+            <div className="mt-12 space-y-3">
+              {FAQS.map((f) => (
+                <details key={f.q} className="group rounded-2xl border-2 border-b-[5px] border-border bg-card px-5 py-4 open:border-brand/40 sm:px-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-[17px] font-bold [&::-webkit-details-marker]:hidden">
+                    <h3>{f.q}</h3>
+                    <span aria-hidden className="shrink-0 text-2xl leading-none text-muted-foreground transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── Final call ── */}
         <section className="border-t border-border">
           <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center md:py-28">
-            <h2 className="text-balance text-4xl font-bold tracking-tight md:text-5xl">Your first formula is a minute away.</h2>
-            <p className="mt-4 text-lg text-muted-foreground">Free to start. No credit card, nothing to install.</p>
+            <h2 className="text-balance text-4xl font-bold tracking-tight md:text-5xl">Start learning Excel for free today.</h2>
+            <p className="mt-4 text-lg text-muted-foreground">Your first formula is a minute away. No credit card, nothing to install.</p>
             <Link
               href={start.href as never}
-              className="group mt-10 flex w-full max-w-lg items-center gap-3 rounded-2xl border-2 border-b-[5px] border-border bg-card p-2 pl-5 text-left transition-colors hover:border-brand"
+              className="group mt-10 flex w-full max-w-lg items-center gap-3 rounded-full border-2 border-border bg-card p-1.5 pb-2.5 pl-6 text-left shadow-[0_4px_0_var(--border)] transition-colors hover:border-brand"
             >
               <span className="font-serif text-lg font-bold italic text-brand">fx</span>
               <span className="min-w-0 flex-1 truncate font-mono text-[15px]">
@@ -436,21 +557,36 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 text-[14px] text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-lg font-bold tracking-tight text-brand">
-              Excelio
-            </Link>
-            <span>© {new Date().getFullYear()}</span>
-          </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            <a href="#how" className="hover:text-foreground">How it works</a>
-            <a href="#path" className="hover:text-foreground">Curriculum</a>
-            <Link href="/legal/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link href="/legal/terms" className="hover:text-foreground">Terms</Link>
+      {/* ── Footer: link columns, then the logo and name in giant faded type ── */}
+      <footer className="overflow-hidden bg-brand text-white">
+        <div className="mx-auto max-w-6xl px-4 pt-16 md:px-6">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+            {FOOTER_COLUMNS.map((col) => (
+              <div key={col.title}>
+                <p className="text-[16px] font-semibold">{col.title}</p>
+                <ul className="mt-4 space-y-3 text-[14px] text-white/90">
+                  {col.links.map((l) => (
+                    <li key={l.label}>
+                      <Link href={l.href as never} className="transition-colors hover:text-white">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </nav>
+
+          <div className="mt-14 flex flex-col gap-2 border-t border-white/25 pt-8 text-[15px] text-white/95 sm:flex-row sm:items-center sm:justify-between">
+            <p>Learn Excel online by actually using it.</p>
+            <p>© {new Date().getFullYear()} Excelio. All rights reserved.</p>
+          </div>
+        </div>
+
+        {/* Giant logo and name, fading into the green. Decorative: the name is already above. */}
+        <div aria-hidden className="pointer-events-none mx-auto mt-10 flex max-w-6xl select-none items-end justify-center gap-[0.04em] px-4 text-[clamp(72px,23vw,240px)] font-extrabold leading-[0.8] tracking-tighter md:px-6 [mask-image:linear-gradient(to_bottom,black_45%,transparent_100%)]">
+          <img src="/logo.png" alt="" className="h-[0.82em] w-auto shrink-0 -rotate-[8deg] opacity-80" />
+          <span className="bg-gradient-to-b from-white/80 to-white/35 bg-clip-text pb-[0.06em] pr-[0.05em] text-transparent">Excelio</span>
         </div>
       </footer>
     </div>
@@ -607,7 +743,7 @@ function Feature({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border-2 border-b-[5px] border-border bg-card p-7">
+    <div className="flex min-w-0 flex-col rounded-2xl border-2 border-b-[5px] border-border bg-card p-5 sm:p-7">
       <span
         className="flex h-10 w-10 items-center justify-center rounded-xl text-white"
         style={{ background: colour, boxShadow: `0 3px 0 color-mix(in oklab, ${colour} 60%, black)` }}
@@ -640,7 +776,7 @@ function StreakWeek() {
 function BadgeShelf() {
   const slugs = ["first-lesson", "three-day-streak", "lookup-specialist", "xp-500", "ten-lessons", "daily-challenge"];
   return (
-    <div className="flex gap-2.5">
+    <div className="flex flex-wrap gap-2.5">
       {slugs.map((slug, i) => {
         const Icon = ACHIEVEMENT_ICONS[slug] ?? Award;
         const got = i < 4;

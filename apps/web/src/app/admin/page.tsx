@@ -226,7 +226,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Row 2: Secondary stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-2xl p-3 flex items-center gap-3 bg-muted/50">
           <UserPlus className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div>

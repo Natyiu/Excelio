@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import Providers from "@/components/providers";
 import { getAppSettings } from "@/lib/actions/user";
+import { SITE_URL } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
       image = base ? `${base.replace(/\/$/, "")}${image.startsWith("/") ? "" : "/"}${image}` : undefined;
     }
     return {
+      metadataBase: new URL(SITE_URL),
       title,
       description,
       openGraph: {
@@ -55,6 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   } catch {
     return {
+      metadataBase: new URL(SITE_URL),
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
     };

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Mascot, type MascotMood } from "@/components/mascot";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 
 /**
  * The centred card layout for account pages (sign up, log in, onboarding, plans):
@@ -29,7 +30,8 @@ export function BrandCardLayout({
 
       <header className="relative">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-6">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-brand">
+          <Link href="/" className="inline-flex items-center gap-[0.3em] text-2xl font-bold tracking-tight text-brand">
+            <BrandLogo />
             Excelio
           </Link>
           {aside}
