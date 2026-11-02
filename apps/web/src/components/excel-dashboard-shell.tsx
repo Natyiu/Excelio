@@ -113,13 +113,13 @@ export function ExcelDashboardShell({
     <div className="flex min-h-screen bg-background font-apple text-foreground antialiased">
       {/* ── Sidebar (desktop) ── */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
-        <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[26px] font-bold tracking-tight text-brand">
-          <BrandLogo />
+        <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[27px] font-bold tracking-tight text-brand">
+          <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
           Excelio
         </Link>
 
         <nav className="flex-1 space-y-1">
-          {/* Profile sits at the bottom of the sidebar instead, above the theme toggle. */}
+          {/* Profile sits at the very bottom of the sidebar instead, under the theme toggle. */}
           {NAV_ITEMS.filter((item) => item.href !== PROFILE_HREF).map((item) => (
             <SidebarLink
               key={item.href}
@@ -131,7 +131,6 @@ export function ExcelDashboardShell({
           <SidebarLink item={{ label: "More", href: "/dashboard/more", icon: More }} active={moreActive} />
         </nav>
 
-        {profileItem && <SidebarLink item={profileItem} active={isActive(pathname, profileItem)} />}
         <button
           type="button"
           onClick={toggleTheme}
@@ -144,14 +143,16 @@ export function ExcelDashboardShell({
           )}
           {isDark ? "Light mode" : "Dark mode"}
         </button>
+        {/* Profile is the last item in the sidebar, under the theme toggle. */}
+        {profileItem && <SidebarLink item={profileItem} active={isActive(pathname, profileItem)} />}
       </aside>
 
       {/* ── Main column ── */}
       <div className="flex min-w-0 flex-1 flex-col pb-24 lg:pb-0">
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b-2 border-border bg-background px-4 lg:hidden">
-          <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] text-xl font-bold tracking-tight text-brand">
-            <BrandLogo />
+          <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] text-[22px] font-bold tracking-tight text-brand">
+            <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
             Excelio
           </Link>
           <StatRow stats={stats} />
