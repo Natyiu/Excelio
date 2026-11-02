@@ -61,15 +61,37 @@ export const PRO_PRODUCT_NAMES: Record<Billing, string> = {
 const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 /**
- * The Polar product to check out for each billing period. Matched by name, ignoring
+ * Polar product ids set in env, one per billing period. Sandbox and live have different
+ * ids, so each environment sets its own (POLAR_PRODUCT_ID_MONTHLY / _YEARLY / _LIFETIME).
+ */
+export function configuredProductIds(): Partial<Record<Billing, string>> {
+  const ids: Partial<Record<Billing, string>> = {};
+  const env: Record<Billing, string | undefined> = {
+    monthly: process.env.POLAR_PRODUCT_ID_MONTHLY,
+    yearly: process.env.POLAR_PRODUCT_ID_YEARLY,
+    lifetime: process.env.POLAR_PRODUCT_ID_LIFETIME,
+  };
+  for (const billing of Object.keys(env) as Billing[]) {
+    const id = env[billing]?.trim();
+    if (id) ids[billing] = id;
+  }
+  return ids;
+}
+
+/**
+ * The Polar product to check out for each billing period. Uses the product ids from env
+ * (see configuredProductIds). A plan with no id set falls back to matching by name, ignoring
  * spaces, dashes and case; failing that, the Excelio product with the right billing
- * (monthly, yearly or one-time). Products without "Excelio" in the name are never used.
+ * (monthly, yearly or one-time). Products without "Excelio" in the name are never matched.
  */
 export async function getProProducts(): Promise<Partial<Record<Billing, string>>> {
+  const out = configuredProductIds();
+  const missing = (Object.keys(PRO_PRODUCT_NAMES) as Billing[]).filter((b) => !out[b]);
+  if (missing.length === 0) return out;
+
   const { products } = await listProductsForPricing().catch(() => ({ products: [] }));
   const excelio = products.filter((p) => normalise(p.name).includes("excelio"));
-  const out: Partial<Record<Billing, string>> = {};
-  for (const billing of Object.keys(PRO_PRODUCT_NAMES) as Billing[]) {
+  for (const billing of missing) {
     const byName = excelio.find((p) => normalise(p.name) === normalise(PRO_PRODUCT_NAMES[billing]));
     const byBilling = excelio.find((p) =>
       billing === "lifetime" ? !p.isRecurring : p.isRecurring && p.recurringInterval === (billing === "monthly" ? "month" : "year")

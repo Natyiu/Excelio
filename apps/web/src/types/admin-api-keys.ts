@@ -6,8 +6,4 @@ export type ApiKeysData = {
   resendFromEmail: string;
   googleClientId: string;
   googleClientSecret: string;
-  polarAccessToken: string;
-  polarOrganizationId: string;
-  polarWebhookSecret: string;
-  polarSandboxMode: boolean;
 };

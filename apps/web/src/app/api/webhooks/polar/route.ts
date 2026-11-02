@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@Batman/db";
-import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { revokePolarSubscription } from "@/lib/polar-revoke";
 
 export async function POST(req: NextRequest) {
@@ -11,15 +11,8 @@ export async function POST(req: NextRequest) {
       headers[k.toLowerCase()] = v;
     });
 
-    const settings = await prisma.appSettings.findUnique({
-      where: { id: "default" },
-      select: { polarWebhookSecret: true },
-    });
-
-    // Accept either the admin-panel secret or the env var, so a stale value in one place
-    // can't silently block deliveries signed with the other.
+    // The secret comes only from env; admin settings don't affect payments.
     const candidates = [
-      { source: "admin settings", secret: settings?.polarWebhookSecret?.trim() },
       { source: "POLAR_WEBHOOK_SECRET env", secret: process.env.POLAR_WEBHOOK_SECRET?.trim() },
     ].filter((c): c is { source: string; secret: string } => !!c.secret);
     if (candidates.length === 0) {
@@ -92,31 +85,62 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (e) {
-    if (e instanceof WebhookVerificationError) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
     console.error("[Polar webhook]", e);
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
 
+/** Seconds a delivery's timestamp may differ from now (Standard Webhooks default). */
+const WEBHOOK_TOLERANCE_SECONDS = 5 * 60;
+
 /**
- * Returns the event if any secret's signature matches, otherwise null. The SDK verifies the
- * signature first and only then parses the payload against its schemas; if that parsing fails
- * (an event type or API version newer than this SDK knows), the signature was still valid, so
- * fall back to the raw JSON instead of answering 500 and getting the endpoint disabled.
+ * HMAC keys a secret may sign with. Older Polar secrets sign with the secret's UTF-8 bytes
+ * (what SDK 0.46's validateEvent assumes); newer `whsec_<base64>` secrets sign with the
+ * base64-decoded bytes after the prefix (the Standard Webhooks convention). Try both, as
+ * Polar's current SDK does.
+ */
+function hmacKeys(secret: string): Buffer[] {
+  const utf8Key = Buffer.from(secret, "utf-8");
+  const keys = [utf8Key];
+  const rest = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+  if (/^[A-Za-z0-9+/]+={0,2}$/.test(rest)) {
+    const decoded = Buffer.from(rest, "base64");
+    if (decoded.length > 0 && !decoded.equals(utf8Key)) keys.push(decoded);
+  }
+  return keys;
+}
+
+/**
+ * Returns the parsed event if any secret's signature matches, otherwise null. Returns the raw
+ * JSON (snake_case) rather than the SDK's schema parse, so event types or API versions newer
+ * than the installed SDK don't fail with a 500 and get the endpoint disabled.
  */
 function verifyPolarEvent(
   body: string,
   headers: Record<string, string>,
   candidates: { secret: string }[],
 ): { type?: string; data?: unknown } | null {
+  const id = headers["webhook-id"];
+  const ts = headers["webhook-timestamp"];
+  const sigHeader = headers["webhook-signature"];
+  if (!id || !ts || !sigHeader) return null;
+  const timestamp = Number(ts);
+  if (!Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > WEBHOOK_TOLERANCE_SECONDS) {
+    console.error("[Polar webhook] Timestamp outside tolerance:", ts);
+    return null;
+  }
+  const signed = `${id}.${Math.floor(timestamp)}.${body}`;
+  const signatures = sigHeader
+    .split(" ")
+    .map((s) => s.split(",", 2))
+    .flatMap(([v, s]) => (v === "v1" && s ? [Buffer.from(s, "base64")] : []));
+
   for (const { secret } of candidates) {
-    try {
-      return validateEvent(body, headers, secret) as { type?: string; data?: unknown };
-    } catch (e) {
-      if (e instanceof WebhookVerificationError) continue;
-      return JSON.parse(body);
+    for (const key of hmacKeys(secret)) {
+      const expected = createHmac("sha256", key).update(signed).digest();
+      if (signatures.some((s) => s.length === expected.length && timingSafeEqual(s, expected))) {
+        return JSON.parse(body);
+      }
     }
   }
   return null;

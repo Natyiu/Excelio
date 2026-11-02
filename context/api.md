@@ -45,11 +45,15 @@ upload or a third-party webhook, it should almost certainly be a server action i
 
 ## Webhooks
 
-`api/webhooks/polar/route.ts` handles `subscription.*` events from Polar (billing), verifying
-the signature via `@polar-sh/sdk/webhooks`' `validateEvent()` before trusting the payload. The
-webhook secret is read from `AppSettings.polarWebhookSecret` first, falling back to the
-`POLAR_WEBHOOK_SECRET` env var — same admin-override-then-env pattern used throughout the app
-for third-party credentials (see `api-keys.ts` in [db.md](./db.md)).
+`api/webhooks/polar/route.ts` handles `subscription.*` and `order.*` events from Polar (billing).
+It verifies the Standard Webhooks signature itself with `node:crypto` (trying both the UTF-8 and
+the base64-decoded `whsec_` key, since SDK 0.46's `validateEvent()` only knows the former) before
+trusting the payload.
+
+Payments are configured **only from env**, never from admin settings: `POLAR_ACCESS_TOKEN`,
+`POLAR_SANDBOX_MODE`, `POLAR_WEBHOOK_SECRET`, and the plan ids `POLAR_PRODUCT_ID_MONTHLY` /
+`_YEARLY` / `_LIFETIME` (`lib/polar-client.ts`, `lib/pro-access.ts`). The `AppSettings.polar*`
+columns still exist but nothing reads them.
 
 ## Middleware is a no-op
 

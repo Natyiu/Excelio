@@ -53,10 +53,6 @@ export async function getApiKeys() {
         resendFromEmail: true,
         googleClientId: true,
         googleClientSecret: true,
-        polarAccessToken: true,
-        polarOrganizationId: true,
-        polarWebhookSecret: true,
-        polarSandboxMode: true,
       },
     }),
     readEnvVars(),
@@ -72,12 +68,6 @@ export async function getApiKeys() {
     settings?.resendFromEmail ?? env.RESEND_FROM_EMAIL ?? "noreply@updates.yourdomain.com";
   const googleClientId = settings?.googleClientId ?? env.GOOGLE_CLIENT_ID ?? "";
   const googleClientSecret = settings?.googleClientSecret ?? env.GOOGLE_CLIENT_SECRET ?? "";
-  const polarAccessToken = settings?.polarAccessToken ?? env.POLAR_ACCESS_TOKEN ?? "";
-  const polarOrganizationId =
-    settings?.polarOrganizationId ?? env.POLAR_ORGANIZATION_ID ?? "";
-  const polarWebhookSecret = settings?.polarWebhookSecret ?? env.POLAR_WEBHOOK_SECRET ?? "";
-  const polarSandboxMode =
-    settings?.polarSandboxMode ?? (env.POLAR_SANDBOX_MODE === "false" ? false : true);
 
   return {
     supabaseUrl,
@@ -87,10 +77,6 @@ export async function getApiKeys() {
     resendFromEmail,
     googleClientId,
     googleClientSecret: mask(googleClientSecret),
-    polarAccessToken: mask(polarAccessToken),
-    polarOrganizationId,
-    polarWebhookSecret: mask(polarWebhookSecret),
-    polarSandboxMode,
   };
 }
 
@@ -102,10 +88,6 @@ export async function saveApiKeys(data: {
   resendFromEmail?: string;
   googleClientId?: string;
   googleClientSecret?: string;
-  polarAccessToken?: string;
-  polarOrganizationId?: string;
-  polarWebhookSecret?: string;
-  polarSandboxMode?: boolean;
 }) {
   await requireAdmin();
 
@@ -116,8 +98,6 @@ export async function saveApiKeys(data: {
       supabaseServiceRoleKey: true,
       resendApiKey: true,
       googleClientSecret: true,
-      polarAccessToken: true,
-      polarWebhookSecret: true,
     },
   });
 
@@ -152,23 +132,6 @@ export async function saveApiKeys(data: {
       ? data.googleClientSecret || null
       : current?.googleClientSecret ?? null;
   }
-  if (data.polarAccessToken !== undefined) {
-    update.polarAccessToken = unmasked(data.polarAccessToken)
-      ? data.polarAccessToken || null
-      : current?.polarAccessToken ?? null;
-  }
-  if (data.polarOrganizationId !== undefined) {
-    update.polarOrganizationId = data.polarOrganizationId || null;
-  }
-  if (data.polarWebhookSecret !== undefined) {
-    update.polarWebhookSecret = unmasked(data.polarWebhookSecret)
-      ? data.polarWebhookSecret || null
-      : current?.polarWebhookSecret ?? null;
-  }
-  if (data.polarSandboxMode !== undefined) {
-    update.polarSandboxMode = data.polarSandboxMode;
-  }
-
   await prisma.appSettings.upsert({
     where: { id: "default" },
     update,

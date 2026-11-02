@@ -18,7 +18,6 @@ import {
   File01Icon as FileText,
   Sun03Icon as Sun,
   Moon02Icon as Moon,
-  CreditCardIcon as CreditCard,
   GlobeIcon as Globe,
   RocketIcon as Rocket,
   StarIcon as Star,
@@ -59,7 +58,6 @@ const adminGroups: { title: string; items: NavItem[] }[] = [
     title: "Billing",
     items: [
       { name: "Paid Users", href: "/admin/paid-users", icon: Crown },
-      { name: "Products", href: "/admin/products", icon: CreditCard },
     ],
   },
   {

@@ -101,6 +101,9 @@ This guide explains every environment variable used by Batman, where to get each
 | `POLAR_ORGANIZATION_ID` | Your Polar org ID | Polar Dashboard → Organization |
 | `POLAR_WEBHOOK_SECRET` | Webhook signing secret | Polar Dashboard → Webhooks → Create webhook |
 | `POLAR_SANDBOX_MODE` | `true` = test mode, `false` = live | Set `false` for production |
+| `POLAR_PRODUCT_ID_MONTHLY` | Polar product id for Excelio Pro Monthly | Polar → Products → product → copy ID (sandbox and live ids differ) |
+| `POLAR_PRODUCT_ID_YEARLY` | Polar product id for Excelio Pro Yearly | Same |
+| `POLAR_PRODUCT_ID_LIFETIME` | Polar product id for Excelio Pro Lifetime | Same. Unset plans fall back to matching by product name |
 
 **Used for:** Subscriptions, one-time purchases, checkout. Webhook URL: `https://yourapp.com/api/webhooks/polar`.
 

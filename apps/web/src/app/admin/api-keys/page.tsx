@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import { ApiKeysSkeleton } from "@/components/skeletons";
 import type { ApiKeysData } from "@/types/admin-api-keys";
 
@@ -22,10 +21,6 @@ const emptyKeys: ApiKeysData = {
   resendFromEmail: "",
   googleClientId: "",
   googleClientSecret: "",
-  polarAccessToken: "",
-  polarOrganizationId: "",
-  polarWebhookSecret: "",
-  polarSandboxMode: true,
 };
 
 export default function AdminApiKeysPage() {
@@ -194,75 +189,6 @@ export default function AdminApiKeysPage() {
             onToggleShow={() => toggleShow("googleClientSecret")}
             placeholder="GOCSPX-xxxxxxxxxx"
           />
-        </section>
-
-        <Separator className="opacity-20" />
-
-        {/* Polar */}
-        <section className="space-y-3">
-          <div>
-            <p className="text-sm font-semibold">Polar</p>
-            <p className="text-[12px] text-muted-foreground">
-              Payments, subscriptions, SaaS pricing.{" "}
-              <a
-                href={form.polarSandboxMode ? "https://sandbox.polar.sh" : "https://polar.sh/dashboard"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                {form.polarSandboxMode ? "Sandbox Dashboard" : "Polar Dashboard"}
-              </a>{" "}
-              → Settings → Access Tokens. Create an Organization Access Token with{" "}
-              <code className="text-[11px] bg-muted px-0.5">products:read</code> and{" "}
-              <code className="text-[11px] bg-muted px-0.5">products:write</code>.
-              Use sandbox tokens only with Sandbox mode enabled.
-            </p>
-          </div>
-          <div className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
-            <Label htmlFor="polarSandboxMode" className="text-sm font-medium">
-              Sandbox mode
-            </Label>
-            <Switch
-              id="polarSandboxMode"
-              checked={form.polarSandboxMode}
-              onCheckedChange={(v) => update("polarSandboxMode", v)}
-            />
-          </div>
-          <SecretInput
-            id="polarAccessToken"
-            label="Access Token"
-            value={form.polarAccessToken}
-            onChange={(v) => update("polarAccessToken", v)}
-            show={showSecrets.polarAccessToken ?? false}
-            onToggleShow={() => toggleShow("polarAccessToken")}
-            placeholder="polar_at_xxxxxxxxxx"
-          />
-          <PlainInput
-            id="polarOrganizationId"
-            label="Organization ID"
-            value={form.polarOrganizationId}
-            onChange={(v) => update("polarOrganizationId", v)}
-            placeholder="UUID from Polar dashboard"
-          />
-          <SecretInput
-            id="polarWebhookSecret"
-            label="Webhook Secret"
-            value={form.polarWebhookSecret}
-            onChange={(v) => update("polarWebhookSecret", v)}
-            show={showSecrets.polarWebhookSecret ?? false}
-            onToggleShow={() => toggleShow("polarWebhookSecret")}
-            placeholder="From Polar Dashboard → Webhooks"
-          />
-          <p className="text-[11px] text-muted-foreground">
-            Webhook URL:{" "}
-            <code className="bg-muted px-0.5">
-              {typeof window !== "undefined"
-                ? `${window.location.origin}/api/webhooks/polar`
-                : "https://your-domain.com/api/webhooks/polar"}
-            </code>
-            {" "}— For local dev, use your ngrok URL (e.g. https://xxx.ngrok-free.app/api/webhooks/polar). Configure in{" "}
-            {form.polarSandboxMode ? "sandbox.polar.sh" : "polar.sh"} → Organization → Webhooks.
-          </p>
         </section>
 
         <Separator className="opacity-20" />

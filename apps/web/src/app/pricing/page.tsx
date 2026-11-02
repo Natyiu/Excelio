@@ -45,7 +45,7 @@ export default async function PricingPage() {
         <div className="mb-6 p-4 border border-destructive/30 bg-destructive/5 text-center">
           <p className="text-xs text-destructive">{error}</p>
           <p className="text-[10px] text-muted-foreground mt-1">
-            Configure Polar in Admin → API Keys (Products → API Keys).
+            Check POLAR_ACCESS_TOKEN and POLAR_SANDBOX_MODE in your .env.
           </p>
         </div>
       )}
@@ -57,7 +57,7 @@ export default async function PricingPage() {
             No products configured yet.
           </p>
           <p className="text-[10px] text-muted-foreground/70 mt-1 text-center">
-            Create products in Admin → Products to display them here.
+            Create the Excelio Pro products in Polar and set POLAR_PRODUCT_ID_* in your .env.
           </p>
           {session?.user && (
             <Button asChild variant="outline" size="sm" className="mt-5 h-8 text-[11px]">
