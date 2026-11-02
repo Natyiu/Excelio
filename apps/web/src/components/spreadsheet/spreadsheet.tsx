@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import type {
   Workbook,
   WorksheetData,
@@ -16,6 +16,7 @@ import {
   recalcSheet,
   formatCellValue,
 } from "@/lib/formula-engine";
+import { autoFill, doubleClickFillRows, fillTarget, type FillDirection, type Rect } from "@/lib/autofill";
 
 interface SpreadsheetProps {
   workbook: Workbook;
@@ -126,6 +127,9 @@ export function Spreadsheet({
   } | null>(null);
 
   const [isSelecting, setIsSelecting] = useState(false);
+
+  // Fill-handle drag: the cells being copied and the cell under the pointer.
+  const [fillDrag, setFillDrag] = useState<{ src: Rect; pointer: { col: number; row: number } } | null>(null);
 
   // Editing state
   const [isEditing, setIsEditing] = useState(false);
@@ -272,6 +276,94 @@ export function Spreadsheet({
     [cells, commitCells, currentCellId, readOnly, selectionRange]
   );
 
+  // The selected block (a range, or just the active cell)
+  const selRect = useMemo<Rect>(() => {
+    if (selectionRange) {
+      return {
+        minCol: Math.min(selectionRange.start.col, selectionRange.end.col),
+        maxCol: Math.max(selectionRange.start.col, selectionRange.end.col),
+        minRow: Math.min(selectionRange.start.row, selectionRange.end.row),
+        maxRow: Math.max(selectionRange.start.row, selectionRange.end.row),
+      };
+    }
+    return { minCol: selectedCell.col, maxCol: selectedCell.col, minRow: selectedCell.row, maxRow: selectedCell.row };
+  }, [selectedCell, selectionRange]);
+
+  // Where the current fill-handle drag would write
+  const fillPreview = useMemo(
+    () => (fillDrag ? fillTarget(fillDrag.src, fillDrag.pointer) : null),
+    [fillDrag]
+  );
+
+  // Write AutoFill results into the sheet and select the filled block
+  const applyFill = useCallback(
+    (src: Rect, target: { rect: Rect; dir: FillDirection }) => {
+      if (readOnly) return;
+      const rawAt = (id: string) => {
+        const c = cells[id];
+        if (!c || c.value.spillFrom) return "";
+        return c.value.formula || c.value.raw || "";
+      };
+      const out = autoFill(src, target, rawAt);
+      const vertical = target.dir === "down" || target.dir === "up";
+      const updated: WorksheetData = { ...cells };
+      for (const [id, raw] of Object.entries(out)) {
+        const prev = cells[id];
+        if (prev?.readOnly) continue;
+        // Excel copies the source cell's formatting along with its value
+        const p = parseCellRef(id)!;
+        const srcSpan = vertical ? src.maxRow - src.minRow + 1 : src.maxCol - src.minCol + 1;
+        const offset = vertical
+          ? (target.dir === "down" ? p.row - src.maxRow - 1 : src.minRow - 1 - p.row)
+          : (target.dir === "right" ? p.col - src.maxCol - 1 : src.minCol - 1 - p.col);
+        const k = offset % srcSpan;
+        const srcPos = vertical
+          ? { col: p.col, row: target.dir === "down" ? src.minRow + k : src.maxRow - k }
+          : { col: target.dir === "right" ? src.minCol + k : src.maxCol - k, row: p.row };
+        const srcFormat = cells[cellId(srcPos.col, srcPos.row)]?.format;
+        updated[id] = {
+          id,
+          value: parseCellInput(raw),
+          format: srcFormat ?? prev?.format,
+          highlighted: prev?.highlighted,
+          note: prev?.note,
+        };
+      }
+      commitCells(updated);
+      const all = {
+        minCol: Math.min(src.minCol, target.rect.minCol),
+        maxCol: Math.max(src.maxCol, target.rect.maxCol),
+        minRow: Math.min(src.minRow, target.rect.minRow),
+        maxRow: Math.max(src.maxRow, target.rect.maxRow),
+      };
+      setSelectionRange({
+        start: { col: all.minCol, row: all.minRow },
+        end: { col: all.maxCol, row: all.maxRow },
+      });
+    },
+    [cells, commitCells, readOnly]
+  );
+
+  // Finish drags even when the mouse is released outside the grid
+  const fillDragRef = useRef(fillDrag);
+  const applyFillRef = useRef(applyFill);
+  useLayoutEffect(() => {
+    fillDragRef.current = fillDrag;
+    applyFillRef.current = applyFill;
+  });
+  useEffect(() => {
+    const onUp = () => {
+      setIsSelecting(false);
+      const drag = fillDragRef.current;
+      if (!drag) return;
+      setFillDrag(null);
+      const target = fillTarget(drag.src, drag.pointer);
+      if (target) applyFillRef.current(drag.src, target);
+    };
+    window.addEventListener("mouseup", onUp);
+    return () => window.removeEventListener("mouseup", onUp);
+  }, []);
+
   // Autocomplete handler
   useEffect(() => {
     if (isEditing && editValue.startsWith("=")) {
@@ -299,24 +391,34 @@ export function Spreadsheet({
     []
   );
 
-  // Start editing
+  // Start editing. `targetId` lets a click start editing the cell it just
+  // selected, before the selection state has re-rendered.
   const startEditing = useCallback(
-    (initialValue?: string) => {
-      if (readOnly || currentCell?.readOnly) return;
+    (initialValue?: string, targetId?: string) => {
+      const id = targetId ?? currentCellId;
+      const cell = cells[id];
+      if (readOnly || cell?.readOnly) return;
       const val = initialValue !== undefined
         ? initialValue
-        : currentCell?.value.formula || currentCell?.value.raw || "";
+        : cell?.value.formula || cell?.value.raw || "";
       setEditValue(val);
-      setEditingCellId(currentCellId);
+      setEditingCellId(id);
       editingRef.current = true;
       setIsEditing(true);
-      setTimeout(() => {
-        editInputRef.current?.focus();
-        editInputRef.current?.select();
-      }, 10);
     },
-    [currentCell, currentCellId, readOnly]
+    [cells, currentCellId, readOnly]
   );
+
+  // Focus the inline editor as soon as it mounts, with the caret at the end
+  // (never select the text, or the next keystroke would replace it).
+  useLayoutEffect(() => {
+    if (!isEditing) return;
+    const input = editInputRef.current;
+    if (!input || document.activeElement === formulaInputRef.current) return;
+    input.focus();
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+  }, [isEditing, editingCellId]);
 
   // Stop editing & save
   const finishEditing = useCallback(
@@ -429,6 +531,7 @@ export function Spreadsheet({
         updateCellValue(currentCellId, "");
       } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
         // Typing a character starts editing directly
+        e.preventDefault();
         startEditing(e.key);
       }
     },
@@ -881,6 +984,11 @@ export function Spreadsheet({
                     const isCurrent = selectedCell.col === cIdx && selectedCell.row === rIdx;
                     const targeted = isTarget(id);
                     const rangeHighlight = isRangeHighlighted(id);
+                    const isHandleCell = cIdx === selRect.maxCol && rIdx === selRect.maxRow;
+                    const inFillPreview =
+                      !!fillPreview &&
+                      cIdx >= fillPreview.rect.minCol && cIdx <= fillPreview.rect.maxCol &&
+                      rIdx >= fillPreview.rect.minRow && rIdx <= fillPreview.rect.maxRow;
 
                     // Display text formatting
                     const displayValue = cell
@@ -910,10 +1018,14 @@ export function Spreadsheet({
                         onClick={() => {
                           setSelectedCell({ col: cIdx, row: rIdx });
                           setSelectionRange(null);
+                          // In lessons, one click on the cell to fill in opens it for typing
+                          if (compact && targeted && !(editingRef.current && editingCellId === id)) {
+                            startEditing(undefined, id);
+                          }
                         }}
                         onDoubleClick={() => {
                           setSelectedCell({ col: cIdx, row: rIdx });
-                          startEditing();
+                          if (!(editingRef.current && editingCellId === id)) startEditing(undefined, id);
                         }}
                         onMouseDown={() => {
                           if (isEditing && editingCellId !== id) finishEditing();
@@ -925,6 +1037,10 @@ export function Spreadsheet({
                           });
                         }}
                         onMouseEnter={() => {
+                          if (fillDrag) {
+                            setFillDrag((prev) => (prev ? { ...prev, pointer: { col: cIdx, row: rIdx } } : null));
+                            return;
+                          }
                           if (isSelecting && selectionRange) {
                             setSelectionRange((prev) =>
                               prev ? { ...prev, end: { col: cIdx, row: rIdx } } : null
@@ -970,7 +1086,7 @@ export function Spreadsheet({
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               onBlur={() => finishEditing()}
-                              className="w-full h-full px-2 font-mono text-xs bg-transparent text-foreground focus:outline-none"
+                              className={`w-full h-full bg-transparent text-foreground focus:outline-none ${compact ? "px-3 text-[14px]" : "px-2 font-mono text-xs"}`}
                             />
 
                             {/* Autocomplete suggestions dropdown */}
@@ -1018,16 +1134,44 @@ export function Spreadsheet({
                           </span>
                         )}
 
-                        {/* Excel Active Cell Border Cursor & Fill Handle */}
+                        {/* Excel Active Cell Border Cursor */}
                         {isCurrent && !isEditing && (
-                          <>
-                            <div className={`absolute inset-0 pointer-events-none z-10 ${compact ? "ring-[2.5px] ring-inset ring-brand" : "ring-2 ring-green-600 dark:ring-green-500"}`} />
-                            {/* Fill Handle bottom right dot */}
-                            <div
-                              className="absolute -bottom-1 -right-1 w-2 h-2 bg-green-600 dark:bg-green-500 border border-background z-20 cursor-crosshair rounded-[0.5px]"
-                              title="Drag to auto-fill"
-                            />
-                          </>
+                          <div className={`absolute inset-0 pointer-events-none z-10 ${compact ? "ring-[2.5px] ring-inset ring-brand" : "ring-2 ring-green-600 dark:ring-green-500"}`} />
+                        )}
+
+                        {/* Dashed outline over the cells a fill-handle drag will fill */}
+                        {inFillPreview && (
+                          <div className="absolute inset-0 pointer-events-none z-10 border-2 border-dashed border-green-600 dark:border-green-500 bg-green-500/5" />
+                        )}
+
+                        {/* Fill handle: drag to AutoFill, double-click to fill down beside data.
+                            The cell clips overflow, so the handle and its larger hit area sit inside it. */}
+                        {isHandleCell && !isEditing && !readOnly && (
+                          <div
+                            title="Drag to AutoFill (double-click to fill down)"
+                            className="group/fill absolute bottom-0 right-0 z-20 flex h-4 w-4 cursor-crosshair items-end justify-end"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsSelecting(false);
+                              setFillDrag({ src: selRect, pointer: { col: cIdx, row: rIdx } });
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setFillDrag(null);
+                              const last = doubleClickFillRows(
+                                selRect,
+                                (cid) => !!cells[cid] && cells[cid]!.value.type !== "blank" && cells[cid]!.value.raw !== "",
+                                rowCount
+                              );
+                              if (last !== null) {
+                                applyFill(selRect, { dir: "down", rect: { ...selRect, minRow: selRect.maxRow + 1, maxRow: last } });
+                              }
+                            }}
+                          >
+                            <span className="h-2 w-2 rounded-[1px] border border-background bg-green-600 transition-transform group-hover/fill:scale-125 dark:bg-green-500" />
+                          </div>
                         )}
                       </td>
                     );
