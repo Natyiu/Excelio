@@ -206,18 +206,24 @@ function NotificationCard({ n, isNew }: { n: NotificationItem; isNew: boolean })
           (internal ? (
             <Link
               href={n.attachmentUrl as never}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground shadow-[0_3px_0_var(--brand-deep)] transition hover:brightness-110 active:translate-y-[3px] active:shadow-none"
+              className={cn(
+                "mt-2.5 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-semibold transition active:translate-y-px",
+                // Green only while it's new; once seen it turns grey but stays clickable.
+                isNew
+                  ? "bg-brand text-brand-foreground shadow-[0_2px_0_var(--brand-deep)] hover:brightness-110 active:shadow-none"
+                  : "border border-border bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
             >
-              {n.attachmentName ?? "Open"} <Arrow className="h-4 w-4" />
+              {n.attachmentName ?? "Open"} <Arrow className="h-3.5 w-3.5" />
             </Link>
           ) : (
             <a
               href={n.attachmentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full border-2 border-border px-4 py-1.5 text-sm font-semibold hover:bg-muted"
+              className="mt-2.5 inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[13px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              <Download className="h-4 w-4" /> {n.attachmentName ?? "Download"}
+              <Download className="h-3.5 w-3.5" /> {n.attachmentName ?? "Download"}
             </a>
           ))}
       </div>
