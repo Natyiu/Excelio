@@ -409,16 +409,30 @@ export function Spreadsheet({
     [cells, currentCellId, readOnly]
   );
 
-  // Focus the inline editor as soon as it mounts, with the caret at the end
-  // (never select the text, or the next keystroke would replace it).
+  // The active cell always holds a real (invisible while idle) <input>, so
+  // typing goes into it natively: no re-injected keys, and macOS input
+  // methods / accents / predictions compose in the right place.
+  // gridActiveRef: the learner is working in this grid, so keep focus on it.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const gridActiveRef = useRef(false);
+
   useLayoutEffect(() => {
-    if (!isEditing) return;
+    if (!gridActiveRef.current) return;
     const input = editInputRef.current;
-    if (!input || document.activeElement === formulaInputRef.current) return;
-    input.focus();
+    const active = document.activeElement;
+    if (active === formulaInputRef.current) return;
+    // Don't steal focus from something outside the grid (a button, the page).
+    if (active && active !== document.body && !rootRef.current?.contains(active)) return;
+    if (!input) {
+      // Read-only cell: keep arrow keys working via the grid container
+      if (!active || active === document.body) rootRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (active === input) return; // already typing here: never move the caret mid-input
+    input.focus({ preventScroll: true });
     const end = input.value.length;
     input.setSelectionRange(end, end);
-  }, [isEditing, editingCellId]);
+  }, [isEditing, editingCellId, currentCellId]);
 
   // Stop editing & save
   const finishEditing = useCallback(
@@ -466,6 +480,8 @@ export function Spreadsheet({
   // Keyboard navigation on grid
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Let an input method (IME) finish composing before Enter/Tab/arrows act.
+      if (e.nativeEvent.isComposing || e.key === "Process") return;
       if (isEditing) {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -529,8 +545,13 @@ export function Spreadsheet({
       } else if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         updateCellValue(currentCellId, "");
+      } else if (e.key === "F2") {
+        e.preventDefault();
+        startEditing();
       } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        // Typing a character starts editing directly
+        // Typing goes natively into the active cell's input (its onChange starts
+        // editing). Only fall back to injecting the key if focus isn't there.
+        if (e.target === editInputRef.current) return;
         e.preventDefault();
         startEditing(e.key);
       }
@@ -612,8 +633,17 @@ export function Spreadsheet({
 
   return (
     <div
+      ref={rootRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
+      onFocus={() => {
+        gridActiveRef.current = true;
+      }}
+      onBlur={(e) => {
+        // Focus moved to something else on the page (not just the editor remounting)
+        const next = e.relatedTarget as Node | null;
+        if (next && !e.currentTarget.contains(next)) gridActiveRef.current = false;
+      }}
       className={`flex flex-col select-none overflow-hidden font-sans outline-none ${
         compact
           ? "rounded-2xl border-2 border-border bg-card shadow-[0_4px_0_var(--border)]"
@@ -1027,8 +1057,15 @@ export function Spreadsheet({
                           setSelectedCell({ col: cIdx, row: rIdx });
                           if (!(editingRef.current && editingCellId === id)) startEditing(undefined, id);
                         }}
-                        onMouseDown={() => {
+                        onMouseDown={(e) => {
+                          gridActiveRef.current = true;
+                          // Clicks inside the open editor just move its caret
+                          if (e.target === editInputRef.current && editingRef.current) return;
+                          // Keep focus off the grid container: the active cell's input owns it
+                          e.preventDefault();
                           if (isEditing && editingCellId !== id) finishEditing();
+                          if (readOnly || cell?.readOnly) rootRef.current?.focus({ preventScroll: true });
+                          else if (isCurrent) editInputRef.current?.focus({ preventScroll: true });
                           setIsSelecting(true);
                           setSelectedCell({ col: cIdx, row: rIdx });
                           setSelectionRange({
@@ -1078,15 +1115,39 @@ export function Spreadsheet({
                         )}
 
                         {/* Inline editor when this cell is being edited */}
-                        {isEditing && (editingCellId ?? currentCellId) === id ? (
-                          <div className="absolute inset-0 z-30 flex items-center bg-background ring-2 ring-green-500 shadow-md">
+                        {/* The active cell's input. Idle: invisible, catching keystrokes.
+                            Editing: the visible inline editor. Same element in both states,
+                            so the first typed character stays put. */}
+                        {(isEditing
+                          ? (editingCellId ?? currentCellId) === id
+                          : isCurrent && !readOnly && !cell?.readOnly) && (
+                          <div
+                            className={
+                              isEditing
+                                ? "absolute inset-0 z-30 flex items-center bg-background ring-2 ring-green-500 shadow-md"
+                                : "pointer-events-none absolute inset-0 opacity-0"
+                            }
+                          >
                             <input
                               ref={editInputRef}
                               type="text"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
+                              autoComplete="off"
+                              autoCorrect="off"
+                              autoCapitalize="off"
+                              spellCheck={false}
+                              aria-label={`Cell ${id}`}
+                              value={isEditing ? editValue : ""}
+                              onChange={(e) => {
+                                setEditValue(e.target.value);
+                                if (!editingRef.current) {
+                                  // First keystroke in an idle cell: start editing with it
+                                  setEditingCellId(id);
+                                  editingRef.current = true;
+                                  setIsEditing(true);
+                                }
+                              }}
                               onBlur={() => finishEditing()}
-                              className={`w-full h-full bg-transparent text-foreground focus:outline-none ${compact ? "px-3 text-[14px]" : "px-2 font-mono text-xs"}`}
+                              className={`w-full h-full select-text bg-transparent text-foreground focus:outline-none ${compact ? "px-3 text-[14px]" : "px-2 font-mono text-xs"}`}
                             />
 
                             {/* Autocomplete suggestions dropdown */}
@@ -1121,7 +1182,8 @@ export function Spreadsheet({
                               </div>
                             )}
                           </div>
-                        ) : (
+                        )}
+                        {!(isEditing && (editingCellId ?? currentCellId) === id) && (
                           // Normal Cell Content
                           <span>
                             {cell?.value.type === "error" ? (
