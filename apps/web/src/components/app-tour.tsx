@@ -282,8 +282,8 @@ export function AppTour({ userId, createdAt }: { userId: string; createdAt?: Dat
         }
         targetRef.current = el;
         if (el) {
-          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          el.scrollIntoView({ block: "center", inline: "nearest", behavior: reduce ? "auto" : "smooth" });
+          // Jump straight there, so the spotlight lands on the feature instead of chasing it.
+          el.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
         }
         setReady(index);
         return;
@@ -340,6 +340,7 @@ export function AppTour({ userId, createdAt }: { userId: string; createdAt?: Dat
 
   const showing = ready === index;
   const spot = showing ? box : null;
+  const placement = showing ? placeCard(spot, cardH) : null;
 
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="app-tour-title">
@@ -350,19 +351,20 @@ export function AppTour({ userId, createdAt }: { userId: string; createdAt?: Dat
       {spot ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute rounded-2xl ring-2 ring-brand motion-safe:transition-all motion-safe:duration-300"
+          className="pointer-events-none absolute rounded-2xl bg-green-500/10 ring-2 ring-green-500"
           style={{ ...spot, boxShadow: "0 0 0 9999px rgb(0 0 0 / 0.6)" }}
         />
       ) : (
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/60 motion-safe:transition-opacity" />
       )}
 
-      {showing && (
+      {placement && (
         <div
           ref={cardRef}
           className="absolute rounded-2xl border-2 border-border bg-card p-5 text-card-foreground shadow-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-200"
-          style={placeCard(spot, cardH)}
+          style={placement.style}
         >
+          {placement.arrow && <CardArrow {...placement.arrow} />}
           <button
             type="button"
             onClick={close}
@@ -420,29 +422,62 @@ export function AppTour({ userId, createdAt }: { userId: string; createdAt?: Dat
   );
 }
 
-/** Puts the card below or above the spotlight (whichever has room), or centres it. */
-function placeCard(spot: Box | null, cardH: number): CSSProperties {
+type Placement = {
+  style: CSSProperties;
+  /** Which edge of the card the arrow sits on (it points at the spotlight). None when centred. */
+  arrow: { side: "left" | "top" | "bottom"; offset: number } | null;
+};
+
+const ARROW_EDGE = 22; // keep the arrow clear of the card's rounded corners
+
+/** Puts the card beside, below or above the spotlight (whichever has room), or centres it. */
+function placeCard(spot: Box | null, cardH: number): Placement {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const width = Math.min(CARD_W, vw - GUTTER * 2);
 
   if (!spot) {
-    return { width, left: (vw - width) / 2, top: Math.max(GUTTER, (vh - cardH) / 2) };
+    return { style: { width, left: (vw - width) / 2, top: Math.max(GUTTER, (vh - cardH) / 2) }, arrow: null };
   }
 
   const clampX = (x: number) => Math.min(Math.max(GUTTER, x), vw - width - GUTTER);
   const clampY = (y: number) => Math.min(Math.max(GUTTER, y), vh - cardH - GUTTER);
+  const clampArrow = (o: number, size: number) => Math.min(Math.max(ARROW_EDGE, o), size - ARROW_EDGE);
   const below = vh - (spot.top + spot.height) - GAP;
   const above = spot.top - GAP;
   const right = vw - (spot.left + spot.width) - GAP;
+  const midX = spot.left + spot.width / 2;
+  const midY = spot.top + spot.height / 2;
 
   // Narrow targets in the sidebar: put the card beside them.
   if (spot.width < vw / 3 && right >= width + GUTTER && spot.left < vw / 3) {
-    return { width, left: spot.left + spot.width + GAP, top: clampY(spot.top + spot.height / 2 - cardH / 2) };
+    const top = clampY(midY - cardH / 2);
+    return {
+      style: { width, left: spot.left + spot.width + GAP, top },
+      arrow: { side: "left", offset: clampArrow(midY - top, cardH) },
+    };
   }
-  const centreX = clampX(spot.left + spot.width / 2 - width / 2);
+  const left = clampX(midX - width / 2);
   if (below >= cardH + GUTTER || below >= above) {
-    return { width, left: centreX, top: clampY(spot.top + spot.height + GAP) };
+    return {
+      style: { width, left, top: clampY(spot.top + spot.height + GAP) },
+      arrow: { side: "top", offset: clampArrow(midX - left, width) },
+    };
   }
-  return { width, left: centreX, top: clampY(spot.top - GAP - cardH) };
+  return {
+    style: { width, left, top: clampY(spot.top - GAP - cardH) },
+    arrow: { side: "bottom", offset: clampArrow(midX - left, width) },
+  };
+}
+
+/** A "V" on the card's edge pointing at the spotlight: a rotated square showing two borders. */
+function CardArrow({ side, offset }: { side: "left" | "top" | "bottom"; offset: number }) {
+  const base = "pointer-events-none absolute h-4 w-4 rotate-45 border-border bg-card";
+  if (side === "left") {
+    return <span aria-hidden className={cn(base, "-left-[9px] -mt-2 border-b-2 border-l-2")} style={{ top: offset }} />;
+  }
+  if (side === "top") {
+    return <span aria-hidden className={cn(base, "-top-[9px] -ml-2 border-l-2 border-t-2")} style={{ left: offset }} />;
+  }
+  return <span aria-hidden className={cn(base, "-bottom-[9px] -ml-2 border-b-2 border-r-2")} style={{ left: offset }} />;
 }
