@@ -94,7 +94,7 @@ const STEPS: Step[] = [
     path: "/dashboard/leaderboard",
     target: { nav: "/dashboard/leaderboard" },
     title: "Full leaderboard",
-    body: "The top three, everyone's level and XP, and where you rank. Switch between current and longest streaks.",
+    body: "The top three and where you rank. Switch between daily streaks and XP.",
     mood: "cheer",
   },
   {

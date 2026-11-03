@@ -506,7 +506,7 @@ type LeaderboardEntry = {
   userId: string;
   displayName: string;
   avatarUrl: string | null;
-  /** Days in a row: the live current streak, or the best-ever streak on the "longest" board */
+  /** Days in a row: the live current streak (best-ever streak on the "longest" board) */
   streak: number;
   xp: number;
   level: LessonDifficulty;
@@ -516,16 +516,19 @@ type LeaderboardEntry = {
 };
 
 /**
- * Streak leaderboard: more days in a row ranks higher, ties go to more XP.
- * "current" uses today's live streak (a streak whose last day was before yesterday has ended);
- * "longest" uses each learner's best-ever streak. Older "weekly"/"alltime" values map to these.
+ * Leaderboards.
+ * "current": today's live streak ranks first (a streak whose last day was before yesterday has
+ *   ended), ties go to more XP.
+ * "xp": total XP ranks first, ties go to the longer live streak.
+ * "longest": each learner's best-ever streak. Older "weekly" maps to "current", "alltime" to "xp".
  */
 export async function getLeaderboard(
-  period: "current" | "longest" | "weekly" | "alltime" = "current"
+  period: "current" | "xp" | "longest" | "weekly" | "alltime" = "current"
 ): Promise<LeaderboardEntry[]> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
-  const board: "current" | "longest" = period === "longest" || period === "alltime" ? "longest" : "current";
+  const board: "current" | "xp" | "longest" =
+    period === "xp" || period === "alltime" ? "xp" : period === "longest" ? "longest" : "current";
 
   const yesterday = new Date();
   yesterday.setHours(0, 0, 0, 0);
@@ -535,8 +538,15 @@ export async function getLeaderboard(
     where:
       board === "current"
         ? { currentStreak: { gt: 0 }, lastActivityDate: { gte: yesterday } }
-        : { longestStreak: { gt: 0 } },
-    orderBy: board === "current" ? [{ currentStreak: "desc" }, { totalXp: "desc" }] : [{ longestStreak: "desc" }, { totalXp: "desc" }],
+        : board === "xp"
+          ? { totalXp: { gt: 0 } }
+          : { longestStreak: { gt: 0 } },
+    orderBy:
+      board === "current"
+        ? [{ currentStreak: "desc" }, { totalXp: "desc" }]
+        : board === "xp"
+          ? [{ totalXp: "desc" }, { currentStreak: "desc" }]
+          : [{ longestStreak: "desc" }, { totalXp: "desc" }],
     take: 50,
   });
 
@@ -558,17 +568,19 @@ export async function getLeaderboard(
         userId: p.id,
         displayName: user?.name ?? "Anonymous",
         avatarUrl: user?.image ?? null,
-        streak: board === "current" ? liveStreak(p.currentStreak, p.lastActivityDate) : p.longestStreak,
+        streak: board === "longest" ? p.longestStreak : liveStreak(p.currentStreak, p.lastActivityDate),
         xp: p.totalXp,
         level: levelFromCompleted(doneCount.get(p.id) ?? 0),
         isCurrentUser: p.id === session.user.id,
         isRival: false,
       };
     })
-    .filter((e) => e.streak > 0);
+    .filter((e) => (board === "xp" ? e.xp > 0 : e.streak > 0));
 
   // Admin-made rivals (none if the table hasn't been created yet)
-  const rivals = await prisma.rival.findMany({ where: { active: true, currentStreak: { gt: 0 } }, take: 50 }).catch(() => []);
+  const rivals = await prisma.rival
+    .findMany({ where: { active: true, ...(board === "xp" ? { totalXp: { gt: 0 } } : { currentStreak: { gt: 0 } }) }, take: 50 })
+    .catch(() => []);
   const rivalEntries: Omit<LeaderboardEntry, "rank">[] = rivals.map((r) => ({
     userId: `rival:${r.id}`,
     displayName: r.name,
@@ -581,8 +593,11 @@ export async function getLeaderboard(
   }));
 
   return [...real, ...rivalEntries]
-    // Longer streak first, then more XP; on a full tie real learners rank above rivals
-    .sort((a, b) => b.streak - a.streak || b.xp - a.xp || Number(a.isRival) - Number(b.isRival))
+    // The board's main measure first, then the other; on a full tie real learners rank above rivals
+    .sort((a, b) =>
+      (board === "xp" ? b.xp - a.xp || b.streak - a.streak : b.streak - a.streak || b.xp - a.xp) ||
+      Number(a.isRival) - Number(b.isRival)
+    )
     .slice(0, 50)
     .map((e, idx) => ({ ...e, rank: idx + 1 }));
 }

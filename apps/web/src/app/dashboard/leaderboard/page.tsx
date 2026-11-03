@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { CrownIcon } from "@hugeicons/react";
+import { CrownIcon, FlashIcon } from "@hugeicons/react";
 import { getLeaderboard } from "@/lib/actions/excel-learning";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mascot } from "@/components/mascot";
@@ -17,11 +17,22 @@ interface LeaderboardPageProps {
 type Entry = Awaited<ReturnType<typeof getLeaderboard>>[number];
 
 const PERIODS = [
-  { id: "current", label: "Current streak" },
-  { id: "longest", label: "Longest streak" },
+  { id: "current", label: "Daily streak" },
+  { id: "xp", label: "XP" },
 ] as const;
+type Period = (typeof PERIODS)[number]["id"];
 
 const days = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+
+/** XP as the bolt icon plus the number, the XP twin of StreakCount. */
+function XpCount({ xp, className }: { xp: number; className?: string }) {
+  return (
+    <span title={`${xp.toLocaleString()} XP`} className={cn("inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-brand", className)}>
+      <FlashIcon className="h-[1.15em] w-[1.15em]" />
+      {xp.toLocaleString()}
+    </span>
+  );
+}
 
 // Gold, silver and bronze for the podium.
 const PODIUM = [
@@ -41,13 +52,13 @@ const initials = (name: string) =>
 
 export default async function LeaderboardPage({ searchParams }: LeaderboardPageProps) {
   const sp = await searchParams;
-  // Old links used weekly/alltime
-  const period: "current" | "longest" = sp.period === "longest" || sp.period === "alltime" ? "longest" : "current";
+  // Old links used weekly/alltime/longest
+  const period: Period = sp.period === "xp" || sp.period === "alltime" ? "xp" : "current";
+  const byXp = period === "xp";
   const board = await getLeaderboard(period);
   const me = board.find((e) => e.isCurrentUser);
   const top = board.slice(0, 3);
   const rest = board.slice(3);
-  const leaderStreak = board[0]?.streak || 1;
 
   return (
     <div className="space-y-8">
@@ -63,13 +74,17 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
         <Mascot mood={me && me.rank <= 3 ? "cheer" : "wave"} size={140} className="absolute -bottom-2 right-4 hidden sm:block" />
         <div className="relative max-w-md">
           <p className="text-[13px] font-bold uppercase tracking-wide opacity-80">
-            {period === "current" ? "Streak league" : "Longest streaks ever"}
+            {byXp ? "XP league" : "Streak league"}
           </p>
           <h1 className="mt-1 text-3xl font-bold">{me ? `You're #${me.rank}` : "Join the board"}</h1>
           <p className="mt-2 text-[15px] opacity-90">
-            {me
-              ? `${days(me.streak)} ${period === "current" ? "in a row. Learn today to keep it going." : "is your best streak."}`
-              : "Learn something every day to build a streak. More days in a row ranks you higher."}
+            {byXp
+              ? me
+                ? `${me.xp.toLocaleString()} XP earned. Finish lessons and challenges to climb.`
+                : "Earn XP from lessons and challenges. More XP ranks you higher."
+              : me
+                ? `${days(me.streak)} in a row. Learn today to keep it going.`
+                : "Learn something every day to build a streak. More days in a row ranks you higher."}
           </p>
 
           {/* period switch */}
@@ -95,7 +110,7 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
         <SectionTitle>Top three</SectionTitle>
         <div className="grid grid-cols-3 items-end gap-2 pt-6 sm:gap-3 [&>*]:min-w-0">
           {[1, 0, 2].map((i) => (
-            <PodiumSpot key={i} entry={top[i]} spot={PODIUM[i]!} />
+            <PodiumSpot key={i} entry={top[i]} spot={PODIUM[i]!} byXp={byXp} />
           ))}
         </div>
       </section>
@@ -106,7 +121,7 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
           <SectionTitle>Rankings</SectionTitle>
           <Panel className="divide-y divide-border overflow-hidden">
             {rest.map((e) => (
-              <Row key={e.userId} entry={e} leaderStreak={leaderStreak} />
+              <Row key={e.userId} entry={e} byXp={byXp} />
             ))}
           </Panel>
         </section>
@@ -117,9 +132,13 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
           <span className="w-8 text-center text-lg font-bold text-muted-foreground">–</span>
           <span className="min-w-0 flex-1 font-bold">You</span>
           <span className="text-sm text-muted-foreground">
-            {board.length >= 50
-              ? `Reach a ${days((board[board.length - 1]?.streak ?? 0) + 1)} streak to get on the board`
-              : "Finish a lesson today to start a streak and get on the board"}
+            {byXp
+              ? board.length >= 50
+                ? `Earn ${((board[board.length - 1]?.xp ?? 0) + 1).toLocaleString()} XP to get on the board`
+                : "Finish a lesson to earn XP and get on the board"
+              : board.length >= 50
+                ? `Reach a ${days((board[board.length - 1]?.streak ?? 0) + 1)} streak to get on the board`
+                : "Finish a lesson today to start a streak and get on the board"}
           </span>
         </Panel>
       )}
@@ -127,7 +146,7 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
   );
 }
 
-function PodiumSpot({ entry, spot }: { entry?: Entry; spot: (typeof PODIUM)[number] }) {
+function PodiumSpot({ entry, spot, byXp }: { entry?: Entry; spot: (typeof PODIUM)[number]; byXp: boolean }) {
   return (
     <div className="flex flex-col items-center">
       {entry ? (
@@ -144,12 +163,12 @@ function PodiumSpot({ entry, spot }: { entry?: Entry; spot: (typeof PODIUM)[numb
           <p className={cn("mt-2 max-w-full truncate px-1 text-center font-bold", entry.isCurrentUser && "text-brand")}>
             {entry.isCurrentUser ? "You" : entry.displayName}
           </p>
-          <span className="flex flex-wrap items-center justify-center gap-1">
-            <LevelBadge level={entry.level} />
+          {/* One line under the name: the board's measure, then level (and rival tag). */}
+          <span className="mt-0.5 flex flex-wrap items-center justify-center gap-1.5">
+            {byXp ? <XpCount xp={entry.xp} className="text-[15px]" /> : <StreakCount days={entry.streak} className="text-[15px]" />}
+            <LevelBadge level={entry.level} short />
             {entry.isRival && <RivalBadge />}
           </span>
-          <StreakCount days={entry.streak} label className="mt-1 text-base" />
-          <p className="text-[12px] tabular-nums text-muted-foreground">{entry.xp.toLocaleString()} XP</p>
         </>
       ) : (
         <>
@@ -157,8 +176,7 @@ function PodiumSpot({ entry, spot }: { entry?: Entry; spot: (typeof PODIUM)[numb
             +
           </span>
           <p className="mt-2 font-semibold text-muted-foreground">Open spot</p>
-          <p className="text-sm text-muted-foreground/70">&nbsp;</p>
-          <p className="text-[12px] text-muted-foreground/70">&nbsp;</p>
+          <p className="mt-0.5 text-[15px]">&nbsp;</p>
         </>
       )}
       {/* the step */}
@@ -172,29 +190,23 @@ function PodiumSpot({ entry, spot }: { entry?: Entry; spot: (typeof PODIUM)[numb
   );
 }
 
-function Row({ entry: e, leaderStreak }: { entry: Entry; leaderStreak: number }) {
+/** One quiet line per learner: rank, face, name and level on the left; only the board's measure on the right. */
+function Row({ entry: e, byXp }: { entry: Entry; byXp: boolean }) {
   return (
-    <div className={cn("flex items-center gap-4 px-4 py-3", e.isCurrentUser && "bg-brand-soft")}>
-      <span className="w-8 text-center text-lg font-bold tabular-nums text-muted-foreground">{e.rank}</span>
-      <Avatar className="h-11 w-11">
+    <div className={cn("flex items-center gap-3 px-4 py-3", e.isCurrentUser && "bg-brand-soft")}>
+      <span className="w-6 shrink-0 text-center font-bold tabular-nums text-muted-foreground">{e.rank}</span>
+      <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={e.avatarUrl || undefined} />
         <AvatarFallback className="bg-muted text-sm font-bold">{initials(e.displayName)}</AvatarFallback>
       </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className={cn("truncate font-bold", e.isCurrentUser && "text-brand")}>
-          {e.displayName}
-          {e.isCurrentUser && <span className="ml-2 text-sm font-semibold text-muted-foreground">(you)</span>}
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <p className={cn("truncate font-semibold", e.isCurrentUser && "text-brand")}>
+          {e.isCurrentUser ? "You" : e.displayName}
         </p>
-        <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
-          <LevelBadge level={e.level} />
-          {e.isRival && <RivalBadge />}
-          <span className="text-[12px] tabular-nums text-muted-foreground">{e.xp.toLocaleString()} XP</span>
-        </span>
-        <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted">
-          <span className="block h-full rounded-full bg-orange-500" style={{ width: `${Math.max(4, (e.streak / leaderStreak) * 100)}%` }} />
-        </span>
+        <LevelBadge level={e.level} short />
+        {e.isRival && <RivalBadge />}
       </div>
-      <StreakCount days={e.streak} label className="text-[15px]" />
+      {byXp ? <XpCount xp={e.xp} className="text-[15px]" /> : <StreakCount days={e.streak} className="text-[15px]" />}
     </div>
   );
 }
