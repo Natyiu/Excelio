@@ -4,12 +4,10 @@ import Link from "next/link";
 import type { ComponentType } from "react";
 import {
   ArrowRight01Icon as Chevron,
-  Mail01Icon as Mail,
   PencilEdit02Icon as Pencil,
   PaintBoardIcon as Paint,
   Settings02Icon as Gear,
   UserCircleIcon as Account,
-  UserGroupIcon as Team,
   MessageAdd01Icon as Feedback,
 } from "@hugeicons/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,13 +26,6 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     ],
   },
   {
-    title: "Teams",
-    rows: [
-      { label: "Organizations", hint: "Learn together with your team", href: "/dashboard/organizations", icon: Team, colour: "#0284c7" },
-      { label: "Invitations", hint: "Invites waiting for you", href: "/dashboard/invitations", icon: Mail, colour: "#7c3aed" },
-    ],
-  },
-  {
     title: "Help",
     rows: [
       { label: "Tell us your feedback", hint: "Ideas, bugs, anything. We read every message", href: "/dashboard/feedback", icon: Feedback, colour: "#ea580c" },
@@ -42,7 +33,7 @@ const GROUPS: { title: string; rows: Row[] }[] = [
   },
 ];
 
-/** Everything outside the main learning nav: account, teams, appearance and sign-out. */
+/** Everything outside the main learning nav: account, help, appearance and sign-out. */
 export default async function MorePage() {
   const session = await auth.api.getSession({ headers: await headers() });
   const user = session?.user;
