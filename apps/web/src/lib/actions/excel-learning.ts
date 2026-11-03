@@ -1,5 +1,6 @@
 "use server";
 
+import { levelFromCompleted, liveStreak } from "@/lib/learner-level";
 import { auth } from "@Batman/auth";
 import { isProCourse } from "@/lib/pro-access";
 import { getSubscriptionStatus } from "@/lib/subscription";
@@ -9,7 +10,7 @@ import { revalidatePath } from "next/cache";
 import { generateXpKey, checkAchievements, ACHIEVEMENTS } from "@/lib/gamification";
 import { COURSES, getAllLessons } from "@/data/lessons";
 import { CHALLENGES } from "@/data/curriculum/challenges";
-import type { LessonStatus } from "@/types/excel-learning";
+import type { LessonDifficulty, LessonStatus } from "@/types/excel-learning";
 
 // ─── User Profile ──────────────────────────────────────────────────────────────
 
@@ -505,89 +506,83 @@ type LeaderboardEntry = {
   userId: string;
   displayName: string;
   avatarUrl: string | null;
+  /** Days in a row: the live current streak, or the best-ever streak on the "longest" board */
+  streak: number;
   xp: number;
+  level: LessonDifficulty;
   isCurrentUser: boolean;
   /** An admin-made rival, not a real learner. Always shown with a "Rival" badge. */
   isRival: boolean;
 };
 
-export async function getLeaderboard(period: "weekly" | "alltime" = "weekly"): Promise<LeaderboardEntry[]> {
+/**
+ * Streak leaderboard: more days in a row ranks higher, ties go to more XP.
+ * "current" uses today's live streak (a streak whose last day was before yesterday has ended);
+ * "longest" uses each learner's best-ever streak. Older "weekly"/"alltime" values map to these.
+ */
+export async function getLeaderboard(
+  period: "current" | "longest" | "weekly" | "alltime" = "current"
+): Promise<LeaderboardEntry[]> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
+  const board: "current" | "longest" = period === "longest" || period === "alltime" ? "longest" : "current";
 
-  // Real learners
-  let real: Omit<LeaderboardEntry, "rank">[];
-  if (period === "weekly") {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
+  const yesterday = new Date();
+  yesterday.setHours(0, 0, 0, 0);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-    const activities = await prisma.dailyActivity.groupBy({
+  const profiles = await prisma.userProfile.findMany({
+    where:
+      board === "current"
+        ? { currentStreak: { gt: 0 }, lastActivityDate: { gte: yesterday } }
+        : { longestStreak: { gt: 0 } },
+    orderBy: board === "current" ? [{ currentStreak: "desc" }, { totalXp: "desc" }] : [{ longestStreak: "desc" }, { totalXp: "desc" }],
+    take: 50,
+  });
+
+  const userIds = profiles.map((p) => p.id);
+  const [users, completed] = await Promise.all([
+    prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, image: true } }),
+    prisma.lessonProgress.groupBy({
       by: ["userId"],
-      where: { activityDate: { gte: weekAgo } },
-      _sum: { xpEarned: true },
-      orderBy: { _sum: { xpEarned: "desc" } },
-      take: 50,
-    });
+      where: { userId: { in: userIds }, status: { in: ["completed", "mastered"] } },
+      _count: { _all: true },
+    }),
+  ]);
+  const doneCount = new Map(completed.map((c) => [c.userId, c._count._all]));
 
-    const userIds = activities.map(a => a.userId);
-    const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, name: true, image: true },
-    });
-
-    real = activities.map((a) => {
-      const user = users.find(u => u.id === a.userId);
-      return {
-        userId: a.userId,
-        displayName: user?.name ?? "Anonymous",
-        avatarUrl: user?.image ?? null,
-        xp: a._sum.xpEarned ?? 0,
-        isCurrentUser: a.userId === session.user.id,
-        isRival: false,
-      };
-    });
-  } else {
-    const profiles = await prisma.userProfile.findMany({
-      orderBy: { totalXp: "desc" },
-      take: 50,
-    });
-
-    const userIds = profiles.map(p => p.id);
-    const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, name: true, image: true },
-    });
-
-    real = profiles.map((p) => {
-      const user = users.find(u => u.id === p.id);
+  const real: Omit<LeaderboardEntry, "rank">[] = profiles
+    .map((p) => {
+      const user = users.find((u) => u.id === p.id);
       return {
         userId: p.id,
         displayName: user?.name ?? "Anonymous",
         avatarUrl: user?.image ?? null,
+        streak: board === "current" ? liveStreak(p.currentStreak, p.lastActivityDate) : p.longestStreak,
         xp: p.totalXp,
+        level: levelFromCompleted(doneCount.get(p.id) ?? 0),
         isCurrentUser: p.id === session.user.id,
         isRival: false,
       };
-    });
-  }
+    })
+    .filter((e) => e.streak > 0);
 
   // Admin-made rivals (none if the table hasn't been created yet)
-  const rivals = await prisma.rival
-    .findMany({ where: { active: true }, take: 50 })
-    .catch(() => []);
-  const rivalEntries = rivals.map((r) => ({
+  const rivals = await prisma.rival.findMany({ where: { active: true, currentStreak: { gt: 0 } }, take: 50 }).catch(() => []);
+  const rivalEntries: Omit<LeaderboardEntry, "rank">[] = rivals.map((r) => ({
     userId: `rival:${r.id}`,
     displayName: r.name,
     avatarUrl: r.avatarUrl,
-    xp: period === "weekly" ? r.weeklyXp : r.totalXp,
+    streak: r.currentStreak,
+    xp: r.totalXp,
+    level: r.level === "intermediate" || r.level === "advanced" ? r.level : "beginner",
     isCurrentUser: false,
     isRival: true,
   }));
 
   return [...real, ...rivalEntries]
-    .filter((e) => e.xp > 0 || !e.isRival)
-    // On a tie, real learners rank above rivals
-    .sort((a, b) => b.xp - a.xp || Number(a.isRival) - Number(b.isRival))
+    // Longer streak first, then more XP; on a full tie real learners rank above rivals
+    .sort((a, b) => b.streak - a.streak || b.xp - a.xp || Number(a.isRival) - Number(b.isRival))
     .slice(0, 50)
     .map((e, idx) => ({ ...e, rank: idx + 1 }));
 }

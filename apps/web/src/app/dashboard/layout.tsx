@@ -25,7 +25,7 @@ export default async function DashboardLayout({
       select: { emailVerified: true },
     }),
     getDashboardStatsCached().catch(() => null),
-    getLeaderboard("weekly").catch(() => []),
+    getLeaderboard("current").catch(() => []),
     // Unread count for the Notifications badge in the sidebar.
     prisma.notificationRecipient
       .count({ where: { userId: session.user.id, read: false } })
@@ -42,13 +42,15 @@ export default async function DashboardLayout({
     redirect("/verify-email" as never);
   }
 
-  // This week's top three (and you, if you're further down) for the rail.
+  // Top three streaks (and you, if you're further down) for the rail.
   const me = board.find((e) => e.isCurrentUser);
   const leaders = [...board.slice(0, 3), ...(me && me.rank > 3 ? [me] : [])].map((e) => ({
     rank: e.rank,
     name: e.displayName,
     avatarUrl: e.avatarUrl,
     xp: e.xp,
+    streak: e.streak,
+    level: e.level,
     isMe: e.isCurrentUser,
     isRival: e.isRival,
   }));

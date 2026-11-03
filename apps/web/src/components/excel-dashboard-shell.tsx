@@ -1,7 +1,10 @@
 "use client";
 
-import { RivalBadge } from "@/components/rival-badge";
+import { StreakCount } from "@/components/streak-count";
+
+import type { LessonDifficulty } from "@/types/excel-learning";
 import { Mascot } from "@/components/mascot";
+import { LevelBadge } from "@/components/level-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -82,7 +85,16 @@ export type ShellStats = {
   dailyGoalMinutes: number;
 };
 
-export type LeaderRow = { rank: number; name: string; avatarUrl: string | null; xp: number; isMe: boolean; isRival?: boolean };
+export type LeaderRow = {
+  rank: number;
+  name: string;
+  avatarUrl: string | null;
+  xp: number;
+  streak: number;
+  level: LessonDifficulty;
+  isMe: boolean;
+  isRival?: boolean;
+};
 
 export function ExcelDashboardShell({
   children,
@@ -181,7 +193,7 @@ export function ExcelDashboardShell({
                 </div>
                 <QuestsPanel stats={stats} />
                 <Panel className="p-5">
-                  <p className="text-lg font-semibold">Weekly leaderboard</p>
+                  <p className="text-lg font-semibold">Streak leaderboard</p>
                   {leaders.length > 0 ? (
                     <LeaderList leaders={leaders} />
                   ) : (
@@ -190,13 +202,13 @@ export function ExcelDashboardShell({
                         <Ranking className="h-6 w-6" />
                       </IconTile>
                       <p className="text-[15px] text-muted-foreground">
-                        Nobody has earned XP yet this week. Finish a lesson to take first place.
+                        Nobody has a streak going yet. Finish a lesson today to take first place.
                       </p>
                     </div>
                   )}
                   <Link
                     href="/dashboard/leaderboard"
-                    className="mt-4 flex items-center gap-1 text-sm font-semibold text-brand"
+                    className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand"
                   >
                     View leaderboard <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -275,31 +287,52 @@ const MEDALS = ["#f5b301", "#b8c2cc", "#d9822b"];
 
 function LeaderList({ leaders }: { leaders: LeaderRow[] }) {
   return (
-    <ol className="mt-3 space-y-1">
-      {leaders.map((l) => {
+    <ol className="mt-4 space-y-2">
+      {leaders.map((l, i) => {
         const medal = MEDALS[l.rank - 1];
+        // Dashed divider between the top three and whoever comes next (usually you).
+        const divider = i > 0 && l.rank > 3 && (leaders[i - 1]?.rank ?? 0) <= 3;
         return (
           <li key={l.rank}>
-            {l.rank > 3 && <span aria-hidden className="my-1.5 block border-t-2 border-dashed border-border" />}
-            <div className={cn("flex items-center gap-3 rounded-xl px-2 py-1.5", l.isMe && "bg-brand-soft")}>
-              <span
-                className={cn(
-                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-black tabular-nums",
-                  medal ? "text-white" : "text-muted-foreground"
-                )}
-                style={medal ? { background: medal } : undefined}
+            {divider && <span aria-hidden className="my-3 block border-t-2 border-dashed border-border" />}
+            <div
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-2",
+                l.isMe ? "py-3" : "py-1.5",
+                l.isMe && "bg-green-500/15 ring-1 ring-inset ring-green-500/25"
+              )}
+            >
+              {medal ? (
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold tabular-nums text-white"
+                  style={{ background: medal }}
+                >
+                  {l.rank}
+                </span>
+              ) : (
+                <span className="w-6 shrink-0 text-center text-[15px] font-bold tabular-nums text-muted-foreground">
+                  {l.rank}
+                </span>
+              )}
+              <Avatar
+                className={cn("h-8 w-8 shrink-0", medal && "ring-2 ring-offset-2 ring-offset-card")}
+                style={medal ? ({ "--tw-ring-color": medal } as React.CSSProperties) : undefined}
               >
-                {l.rank}
-              </span>
-              <Avatar className="h-9 w-9 shrink-0 border-2" style={{ borderColor: medal ?? "var(--border)" }}>
                 <AvatarImage src={l.avatarUrl || undefined} />
                 <AvatarFallback className="bg-muted text-[12px] font-bold">{l.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <span className={cn("min-w-0 flex-1 truncate text-[15px] font-semibold", l.isMe && "text-brand")}>
-                {l.isMe ? "You" : l.name}
-                {l.isRival && <RivalBadge className="ml-1.5" />}
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "truncate text-[15px] font-semibold",
+                    l.isMe && "text-green-600 dark:text-green-400"
+                  )}
+                >
+                  {l.isMe ? "You" : l.name}
+                </span>
+                <LevelBadge level={l.level} short />
               </span>
-              <span className="shrink-0 text-sm font-bold tabular-nums text-muted-foreground">{l.xp.toLocaleString()} XP</span>
+              <StreakCount days={l.streak} className="text-[15px]" />
             </div>
           </li>
         );
