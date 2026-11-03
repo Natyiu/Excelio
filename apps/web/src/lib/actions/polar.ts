@@ -97,7 +97,7 @@ export async function createCheckoutSession(
     const origin =
       baseUrl ||
       process.env.BETTER_AUTH_URL ||
-      process.env.CORS_ORIGIN ||
+      process.env.CORS_ORIGIN?.split(",")[0]?.trim() ||
       "http://localhost:3001";
     const root = origin.replace(/\/$/, "");
     const successUrl = `${root}/dashboard/pro?checkout=success`;

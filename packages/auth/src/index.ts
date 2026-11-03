@@ -29,7 +29,14 @@ export const auth = betterAuth({
   }),
 
   baseURL: env.BETTER_AUTH_URL,
-  trustedOrigins: [env.CORS_ORIGIN],
+  // CORS_ORIGIN may list several origins, comma-separated (e.g. the www and bare domain)
+  trustedOrigins: [
+    ...new Set(
+      [env.BETTER_AUTH_URL, ...env.CORS_ORIGIN.split(",")]
+        .map((o) => o.trim().replace(/\/+$/, ""))
+        .filter(Boolean),
+    ),
+  ],
 
   session: {
     expiresIn: sessionConfig.sessionExpiresIn,

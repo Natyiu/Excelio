@@ -5,5 +5,5 @@
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_APP_URL?.trim() ||
   process.env.BETTER_AUTH_URL?.trim() ||
-  "https://excelio.vercel.app"
+  "https://www.excelio.space"
 ).replace(/\/$/, "");
