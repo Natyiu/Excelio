@@ -5,6 +5,7 @@ import { StreakCount } from "@/components/streak-count";
 import type { LessonDifficulty } from "@/types/excel-learning";
 import { Mascot } from "@/components/mascot";
 import { LevelBadge } from "@/components/level-badge";
+import { AppTour } from "@/components/app-tour";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -127,6 +128,7 @@ export function ExcelDashboardShell({
 
   return (
     <div className="flex min-h-screen bg-background pt-[var(--announcement-h,0px)] font-apple text-foreground antialiased">
+      <AppTour userId={session.user.id} createdAt={session.user.createdAt} />
       {/* ── Sidebar (desktop) ── */}
       <aside className="sticky top-[var(--announcement-h,0px)] hidden h-[calc(100vh-var(--announcement-h,0px))] w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
         <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[27px] font-bold tracking-tight text-brand">
@@ -149,6 +151,7 @@ export function ExcelDashboardShell({
 
         <button
           type="button"
+          data-tour="theme"
           onClick={toggleTheme}
           className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[15px] font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
         >
@@ -192,7 +195,7 @@ export function ExcelDashboardShell({
                   <StatRow stats={stats} />
                 </div>
                 <QuestsPanel stats={stats} />
-                <Panel className="p-5">
+                <Panel data-tour="leaderboard-card" className="p-5">
                   <p className="text-lg font-semibold">Streak leaderboard</p>
                   {leaders.length > 0 ? (
                     <LeaderList leaders={leaders} />
@@ -229,6 +232,7 @@ export function ExcelDashboardShell({
             <Link
               key={item.href}
               href={item.href as never}
+              data-tour-nav={item.href}
               aria-label={item.label}
               className={cn(
                 "relative flex h-11 w-11 items-center justify-center rounded-full transition-colors",
@@ -246,6 +250,7 @@ export function ExcelDashboardShell({
         })}
         <Link
           href={"/dashboard/more" as never}
+          data-tour-nav="/dashboard/more"
           aria-label="More"
           className={cn(
             "flex h-11 w-11 items-center justify-center rounded-full transition-colors",
@@ -264,6 +269,7 @@ function SidebarLink({ item, active, badge = 0 }: { item: NavItem; active: boole
   return (
     <Link
       href={item.href as never}
+      data-tour-nav={item.href}
       className={cn(
         "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-[15px] font-medium transition-colors",
         active
@@ -347,7 +353,7 @@ function StatRow({ stats }: { stats?: ShellStats }) {
   const streak = stats?.currentStreak ?? 0;
   const xp = stats?.totalXp ?? 0;
   return (
-    <div className="flex items-center gap-2 text-[15px] font-semibold tabular-nums">
+    <div data-tour="stats" className="flex items-center gap-2 text-[15px] font-semibold tabular-nums">
       <span className={cn(CHIP, streak > 0 ? "text-orange-500" : "text-muted-foreground")}>
         <Flame className="h-[18px] w-[18px]" /> {streak}
       </span>
@@ -369,7 +375,7 @@ function QuestsPanel({ stats }: { stats?: ShellStats }) {
     { label: "Extend your streak", value: (stats?.todayXp ?? 0) > 0 ? 1 : 0, max: 1, icon: Flame, tone: "rose" as const },
   ];
   return (
-    <Panel className="p-5">
+    <Panel data-tour="quests" className="p-5">
       <div className="flex items-center justify-between">
         <p className="text-lg font-semibold">Daily quests</p>
         <Link href="/dashboard/achievements" className="text-sm font-semibold text-brand">
@@ -402,6 +408,7 @@ function FeedbackInvite({ name }: { name?: string | null }) {
   return (
     <Link
       href="/dashboard/feedback"
+      data-tour="feedback"
       className="group flex items-center gap-4 rounded-2xl border-2 border-b-[5px] border-border bg-card p-4 transition-colors hover:border-brand"
     >
       <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-soft">

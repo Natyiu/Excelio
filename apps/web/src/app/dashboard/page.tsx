@@ -171,6 +171,7 @@ function ChapterBanner({
   return (
     <div
       id={locked ? course.id : undefined}
+      data-tour={state === "current" ? "chapter" : undefined}
       className={cn(
         "relative flex justify-between gap-4 overflow-hidden rounded-2xl px-6",
         state === "current" ? "min-h-52 items-end pb-8 pt-16" : "items-center py-5",
@@ -398,7 +399,7 @@ function LessonList({
 
             {/* step content — only finished and current lessons can be opened */}
             {state === "current" ? (
-              <div className="relative -mt-2 min-w-0 flex-1 rounded-2xl border-2 border-border bg-card p-5">
+              <div data-tour="up-next" className="relative -mt-2 min-w-0 flex-1 rounded-2xl border-2 border-border bg-card p-5">
                 {/* Gridley waves from the corner of the next lesson */}
                 <Mascot mood={lesson.kind === "lesson" || !lesson.kind ? "wave" : "teach"} size={118} className="absolute -top-14 right-3 hidden sm:block" />
                 <p className="text-xs font-semibold uppercase tracking-wide text-brand sm:pr-32">Up next</p>

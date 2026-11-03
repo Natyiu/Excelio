@@ -52,10 +52,20 @@ function fitWorkbook(source: Workbook, challenges: Challenge[]): Workbook {
   return wb;
 }
 
-/** Render the light markdown used in lesson copy: **bold** and `code`. */
-function renderInline(text: string) {
+/**
+ * Render the light markdown used in lesson copy: **bold** and `code`.
+ * With `accent`, bold words are also coloured, so values and cells named in a question
+ * (East, F2, 1200) stand out from the rest of the sentence.
+ */
+function renderInline(text: string, { accent = false }: { accent?: boolean } = {}) {
   return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className={accent ? "text-brand" : undefined}>
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
         <code key={i} className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">
@@ -453,11 +463,11 @@ export function LessonWorkspace({
             {currentChallenge.type === "multiple_choice" ? "Choose the answer" : "Spreadsheet task"}
           </p>
           <h1 className="mt-3 text-[26px] font-bold leading-snug tracking-tight">
-            {renderInline(currentChallenge.instruction)}
+            {renderInline(currentChallenge.instruction, { accent: true })}
           </h1>
           {currentChallenge.detail && (
             <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
-              {renderInline(currentChallenge.detail)}
+              {renderInline(currentChallenge.detail, { accent: true })}
             </p>
           )}
           </div>

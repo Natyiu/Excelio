@@ -12,7 +12,7 @@ import {
 } from "@hugeicons/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Panel, SectionTitle } from "@/components/game-ui";
-import { AppearanceRow, SignOutButton } from "./more-actions";
+import { AppearanceRow, ReplayTourRow, SignOutButton } from "./more-actions";
 
 type Row = { label: string; hint: string; href: string; icon: ComponentType<{ className?: string }>; colour: string };
 
@@ -64,6 +64,7 @@ export default async function MorePage() {
             {g.rows.map((r) => (
               <SettingRow key={r.href} row={r} />
             ))}
+            {g.title === "Help" && <ReplayTourRow />}
           </Panel>
         </section>
       ))}
