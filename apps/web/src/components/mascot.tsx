@@ -224,11 +224,11 @@ function Notebook() {
 function Trophy() {
   return (
     <g>
-      <path d="M100 6 H142 V20 Q142 44 121 48 Q100 44 100 20 Z" fill="#f7b928" stroke="#a86b00" strokeWidth={2.5} />
-      <path d="M100 12 Q86 12 88 24 Q90 33 101 34 M142 12 Q156 12 154 24 Q152 33 141 34" fill="none" stroke="#a86b00" strokeWidth={3} />
-      <rect x={116} y={47} width={10} height={8} fill="#d69a12" />
-      <rect x={106} y={54} width={30} height={7} rx={2} fill="#a86b00" />
-      <path d="M112 14 Q113 30 121 36" stroke="#fff6d5" strokeWidth={3} fill="none" strokeLinecap="round" opacity={0.8} />
+      <path d="M100 6 H142 V20 Q142 44 121 48 Q100 44 100 20 Z" fill="#ffb01f" stroke="#e46f00" strokeWidth={2.5} />
+      <path d="M100 12 Q86 12 88 24 Q90 33 101 34 M142 12 Q156 12 154 24 Q152 33 141 34" fill="none" stroke="#e46f00" strokeWidth={3} />
+      <rect x={116} y={47} width={10} height={8} fill="#ff9a00" />
+      <rect x={106} y={54} width={30} height={7} rx={2} fill="#e46f00" />
+      <path d="M112 14 Q113 30 121 36" stroke="#fff3c4" strokeWidth={3.5} fill="none" strokeLinecap="round" opacity={0.95} />
     </g>
   );
 }
@@ -387,7 +387,18 @@ const MOTION: Record<MascotMood, string> = {
 /** How far (in SVG units) the pupils follow the pointer. */
 const LOOK_RANGE = 3.5;
 
-export function Mascot({ mood = "idle", size = 120, className }: { mood?: MascotMood; size?: number; className?: string }) {
+export function Mascot({
+  mood = "idle",
+  size = 120,
+  className,
+  faceOnly = false,
+}: {
+  mood?: MascotMood;
+  size?: number;
+  className?: string;
+  /** Just the head: face, eyes, blinking and bobbing, no arms, hands or legs. Cropped to fill `size`. */
+  faceOnly?: boolean;
+}) {
   const ref = useRef<SVGSVGElement>(null);
   const [look, setLook] = useState({ x: 0, y: 0 });
   const [hover, setHover] = useState(false);
@@ -430,9 +441,9 @@ export function Mascot({ mood = "idle", size = 120, className }: { mood?: Mascot
   return (
     <svg
       ref={ref}
-      viewBox="0 0 240 250"
+      viewBox={faceOnly ? "32 -8 166 196" : "0 0 240 250"}
       width={size}
-      height={(size * 250) / 240}
+      height={faceOnly ? (size * 196) / 166 : (size * 250) / 240}
       role="img"
       aria-label="Gridley, the spreadsheet mascot"
       className={cn("shrink-0 cursor-pointer touch-manipulation overflow-visible", className)}
@@ -440,16 +451,27 @@ export function Mascot({ mood = "idle", size = 120, className }: { mood?: Mascot
       onPointerLeave={() => setHover(false)}
       onClick={() => setBoing((n) => n + 1)}
     >
-      <ellipse cx={120} cy={240} rx={58} ry={7} fill="#000" opacity={0.18} className="mascot-shadow" style={pivot(120, 240)} />
+      {!faceOnly && (
+        <ellipse cx={120} cy={240} rx={58} ry={7} fill="#000" opacity={0.18} className="mascot-shadow" style={pivot(120, 240)} />
+      )}
       {/* `key` restarts the pop-in whenever the mood changes */}
       <g key={mood} className="mascot-enter" style={pivot(120, 240)}>
         <g key={boing} className={boing ? "mascot-boing" : hover ? "mascot-lean" : undefined} style={pivot(120, 236)}>
           <g className={MOTION[shown]} style={pivot(120, 236)}>
-            <Legs mood={shown} />
+            {!faceOnly && <Legs mood={shown} />}
             <g transform="rotate(-3 120 110)">
               <Body mood={shown} look={look} />
             </g>
-            <Pose mood={shown} />
+            {faceOnly ? (
+              // No hands to hold it, so the trophy rests on the head
+              mood === "trophy" && (
+                <g transform="translate(0 -12)">
+                  <Trophy />
+                </g>
+              )
+            ) : (
+              <Pose mood={shown} />
+            )}
           </g>
         </g>
       </g>

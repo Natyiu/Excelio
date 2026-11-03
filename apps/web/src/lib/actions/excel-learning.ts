@@ -225,7 +225,11 @@ export async function awardXP(amount: number, reason: string, referenceId: strin
 export async function completeLessonWithXP(lessonId: string, courseId: string, xpReward: number, hintCount = 0) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) throw new Error("Not authenticated");
-  if ((await isProCourse(courseId)) && !(await getSubscriptionStatus(session.user.id)).isSubscribed) {
+  if (
+    session.user.role !== "admin" &&
+    (await isProCourse(courseId)) &&
+    !(await getSubscriptionStatus(session.user.id)).isSubscribed
+  ) {
     throw new Error("This chapter needs Pro");
   }
 
@@ -496,10 +500,23 @@ export async function getDashboardStats() {
   };
 }
 
-export async function getLeaderboard(period: "weekly" | "alltime" = "weekly") {
+type LeaderboardEntry = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  xp: number;
+  isCurrentUser: boolean;
+  /** An admin-made rival, not a real learner. Always shown with a "Rival" badge. */
+  isRival: boolean;
+};
+
+export async function getLeaderboard(period: "weekly" | "alltime" = "weekly"): Promise<LeaderboardEntry[]> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
 
+  // Real learners
+  let real: Omit<LeaderboardEntry, "rank">[];
   if (period === "weekly") {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -518,15 +535,15 @@ export async function getLeaderboard(period: "weekly" | "alltime" = "weekly") {
       select: { id: true, name: true, image: true },
     });
 
-    return activities.map((a, idx) => {
+    real = activities.map((a) => {
       const user = users.find(u => u.id === a.userId);
       return {
-        rank: idx + 1,
         userId: a.userId,
         displayName: user?.name ?? "Anonymous",
         avatarUrl: user?.image ?? null,
         xp: a._sum.xpEarned ?? 0,
         isCurrentUser: a.userId === session.user.id,
+        isRival: false,
       };
     });
   } else {
@@ -541,18 +558,38 @@ export async function getLeaderboard(period: "weekly" | "alltime" = "weekly") {
       select: { id: true, name: true, image: true },
     });
 
-    return profiles.map((p, idx) => {
+    real = profiles.map((p) => {
       const user = users.find(u => u.id === p.id);
       return {
-        rank: idx + 1,
         userId: p.id,
         displayName: user?.name ?? "Anonymous",
         avatarUrl: user?.image ?? null,
         xp: p.totalXp,
         isCurrentUser: p.id === session.user.id,
+        isRival: false,
       };
     });
   }
+
+  // Admin-made rivals (none if the table hasn't been created yet)
+  const rivals = await prisma.rival
+    .findMany({ where: { active: true }, take: 50 })
+    .catch(() => []);
+  const rivalEntries = rivals.map((r) => ({
+    userId: `rival:${r.id}`,
+    displayName: r.name,
+    avatarUrl: r.avatarUrl,
+    xp: period === "weekly" ? r.weeklyXp : r.totalXp,
+    isCurrentUser: false,
+    isRival: true,
+  }));
+
+  return [...real, ...rivalEntries]
+    .filter((e) => e.xp > 0 || !e.isRival)
+    // On a tie, real learners rank above rivals
+    .sort((a, b) => b.xp - a.xp || Number(a.isRival) - Number(b.isRival))
+    .slice(0, 50)
+    .map((e, idx) => ({ ...e, rank: idx + 1 }));
 }
 
 export async function recordChallengeAttempt(data: {

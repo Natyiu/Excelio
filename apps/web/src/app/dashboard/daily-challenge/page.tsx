@@ -58,8 +58,8 @@ export default async function ChallengesHubPage() {
                 className="group flex items-center gap-4 rounded-3xl border-2 border-b-[5px] border-border bg-card p-4 transition-colors hover:border-brand active:translate-y-0.5 sm:gap-5 sm:p-5"
               >
                 {/* medallion */}
-                <span className="relative flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-brand shadow-[0_4px_0_var(--brand-deep)]">
-                  <Mascot mood={l.mood} size={72} className="-mb-1" />
+                <span className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand shadow-[0_4px_0_var(--brand-deep)]">
+                  <Mascot mood={l.mood} size={62} faceOnly className="mt-1.5" />
                 </span>
 
                 <span className="min-w-0 flex-1">

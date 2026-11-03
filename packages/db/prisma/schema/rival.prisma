@@ -1,0 +1,24 @@
+/// A rival learner created by an admin so the leaderboard isn't empty early on.
+/// Rivals are not user accounts: they can't sign in, write reviews or pay, they're left out
+/// of admin stats, and learners always see them marked "Rival".
+model Rival {
+  id               String   @id @default(cuid())
+  name             String
+  avatarUrl        String?
+  /// "beginner", "intermediate" or "advanced"
+  level            String   @default("beginner")
+  /// Chapter id from the curriculum they're "on", e.g. "b3"
+  currentChapter   String?
+  lessonsCompleted Int      @default(0)
+  totalXp          Int      @default(0)
+  /// Shown on the weekly board
+  weeklyXp         Int      @default(0)
+  currentStreak    Int      @default(0)
+  /// Unticked rivals are kept but hidden from learners
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([active])
+  @@map("rival")
+}

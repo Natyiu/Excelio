@@ -1,36 +1,38 @@
-import { auth } from "@Batman/auth";
 import prisma from "@Batman/db";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ExcelDashboardShell } from "@/components/excel-dashboard-shell";
-import { getDashboardStats, getLeaderboard } from "@/lib/actions/excel-learning";
+import { getLeaderboard } from "@/lib/actions/excel-learning";
+import { getDashboardStatsCached, getSessionCached } from "@/lib/request-cache";
+import { getActiveAnnouncements } from "@/lib/actions/announcements";
+import { AnnouncementBar } from "@/components/announcement-bar";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSessionCached();
 
   if (!session?.user) {
     redirect("/login");
   }
 
-  let settings = await prisma.appSettings.findUnique({
-    where: { id: "default" },
-  });
-  if (!settings) {
-    settings = await prisma.appSettings.create({
-      data: { id: "default" },
-    });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { emailVerified: true },
-  });
+  // Everything below is independent, so fetch it all at once instead of one after another.
+  const [existingSettings, user, stats, board, unreadNotifications, announcements] = await Promise.all([
+    prisma.appSettings.findUnique({ where: { id: "default" } }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { emailVerified: true },
+    }),
+    getDashboardStatsCached().catch(() => null),
+    getLeaderboard("weekly").catch(() => []),
+    // Unread count for the Notifications badge in the sidebar.
+    prisma.notificationRecipient
+      .count({ where: { userId: session.user.id, read: false } })
+      .catch(() => 0),
+    getActiveAnnouncements(),
+  ]);
+  const settings = existingSettings ?? (await prisma.appSettings.create({ data: { id: "default" } }));
 
   if (settings.maintenanceMode && (session.user.role as string) !== "admin") {
     redirect("/maintenance" as never);
@@ -40,17 +42,7 @@ export default async function DashboardLayout({
     redirect("/verify-email" as never);
   }
 
-
-  // Fetch dashboard stats for sidebar
-  let stats;
-  try {
-    stats = await getDashboardStats();
-  } catch {
-    stats = null;
-  }
-
   // This week's top three (and you, if you're further down) for the rail.
-  const board = await getLeaderboard("weekly").catch(() => []);
   const me = board.find((e) => e.isCurrentUser);
   const leaders = [...board.slice(0, 3), ...(me && me.rank > 3 ? [me] : [])].map((e) => ({
     rank: e.rank,
@@ -58,27 +50,27 @@ export default async function DashboardLayout({
     avatarUrl: e.avatarUrl,
     xp: e.xp,
     isMe: e.isCurrentUser,
+    isRival: e.isRival,
   }));
 
-  // Unread count for the Notifications badge in the sidebar.
-  const unreadNotifications = await prisma.notificationRecipient
-    .count({ where: { userId: session.user.id, read: false } })
-    .catch(() => 0);
-
   return (
-    <ExcelDashboardShell
-      session={session}
-      unreadNotifications={unreadNotifications}
-      leaders={leaders}
-      stats={stats ? {
-        totalXp: stats.totalXp,
-        currentStreak: stats.currentStreak,
-        todayXp: stats.todayXp,
-        todayMinutes: stats.todayMinutes,
-        dailyGoalMinutes: stats.dailyGoalMinutes,
-      } : undefined}
-    >
-      {children}
-    </ExcelDashboardShell>
+    <>
+      {/* Pinned above everything on every dashboard page, lessons included */}
+      <AnnouncementBar items={announcements} />
+      <ExcelDashboardShell
+        session={session}
+        unreadNotifications={unreadNotifications}
+        leaders={leaders}
+        stats={stats ? {
+          totalXp: stats.totalXp,
+          currentStreak: stats.currentStreak,
+          todayXp: stats.todayXp,
+          todayMinutes: stats.todayMinutes,
+          dailyGoalMinutes: stats.dailyGoalMinutes,
+        } : undefined}
+      >
+        {children}
+      </ExcelDashboardShell>
+    </>
   );
 }

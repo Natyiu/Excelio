@@ -7,4 +7,5 @@ export const NOTIFICATION_TAGS = [
   "billing",
   "feature",
   "urgent",
+  "feedback",
 ] as const;

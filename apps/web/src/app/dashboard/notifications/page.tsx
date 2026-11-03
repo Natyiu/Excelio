@@ -1,284 +1,226 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { EmptyState, Panel, pressable } from "@/components/game-ui";
-import { cn } from "@/lib/utils";
-import { useMounted } from "@/lib/use-mounted";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
+  Message01Icon as Chat,
+  Megaphone01Icon as Megaphone,
+  CrownIcon as Crown,
+  SparklesIcon as Sparkles,
+  Alert02Icon as Alert,
   Notification01Icon as Bell,
-  Attachment01Icon as Paperclip,
-  Tick01Icon as Check,
+  ArrowRight01Icon as Arrow,
   Download01Icon as Download,
-  ArrowLeft02Icon as ChevronLeft,
-  ArrowRight02Icon as ChevronRight,
-  InboxIcon as Inbox,
-  FilterIcon as Filter,
 } from "@hugeicons/react";
-import { getUserNotifications, markNotificationsSeen } from "@/lib/actions/notifications";
-import { NOTIFICATION_TAGS } from "@/lib/notification-tags";
+import { getUserNotifications, markAllNotificationsRead, markNotificationsSeen } from "@/lib/actions/notifications";
+import { Mascot } from "@/components/mascot";
+import { Panel } from "@/components/game-ui";
+import { cn } from "@/lib/utils";
 import type { DashboardNotificationItem as NotificationItem } from "@/types/dashboard-notifications";
 
-const TAG_COLORS: Record<string, string> = {
-  general: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-  announcement: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  update: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  maintenance: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  security: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  billing: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
-  feature: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
-  urgent: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200",
+const PAGE_SIZE = 20;
+
+/** Icon and colour for each kind of notification, so it's clear at a glance what it is. */
+const KIND: Record<string, { icon: React.ComponentType<{ className?: string }>; tile: string; label: string }> = {
+  feedback: { icon: Chat, tile: "bg-orange-500/15 text-orange-600 dark:text-orange-300", label: "Reply to your feedback" },
+  announcement: { icon: Megaphone, tile: "bg-violet-500/15 text-violet-600 dark:text-violet-300", label: "Announcement" },
+  billing: { icon: Crown, tile: "bg-purple-500/15 text-purple-600 dark:text-purple-300", label: "Billing" },
+  update: { icon: Sparkles, tile: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300", label: "What's new" },
+  feature: { icon: Sparkles, tile: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300", label: "What's new" },
+  maintenance: { icon: Alert, tile: "bg-amber-500/15 text-amber-600 dark:text-amber-300", label: "Heads up" },
+  security: { icon: Alert, tile: "bg-rose-500/15 text-rose-600 dark:text-rose-300", label: "Security" },
+  urgent: { icon: Alert, tile: "bg-rose-500/15 text-rose-600 dark:text-rose-300", label: "Important" },
+  general: { icon: Bell, tile: "bg-muted text-muted-foreground", label: "Excelio" },
 };
+
+// Titles may start with an emoji ("💬 We replied…"); the icon already says that.
+const stripEmoji = (s: string) => s.replace(/^[\p{Extended_Pictographic}️‍\s]+/u, "");
+
+function timeAgo(date: Date) {
+  const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const mounted = useMounted();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [items, setItems] = useState<NotificationItem[] | null>(null);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [tagFilter, setTagFilter] = useState("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Ids that were unread when they arrived: they stay highlighted for this visit.
+  const [fresh, setFresh] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    load(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tagFilter, unreadOnly]);
+  async function load(nextPage: number, append: boolean) {
+    const res = await getUserNotifications({ unreadOnly, page: nextPage, limit: PAGE_SIZE });
+    const list = res.notifications as unknown as NotificationItem[];
+    setItems((prev) => (append && prev ? [...prev, ...list] : list));
+    setTotal(res.total);
+    setPage(res.currentPage);
+    setPages(res.pages);
 
-  async function load(page: number) {
-    const result = await getUserNotifications({
-      tag: tagFilter === "all" ? undefined : tagFilter,
-      unreadOnly,
-      page,
-      limit: 15,
-    });
-    const items = result.notifications as unknown as NotificationItem[];
-    setNotifications(items);
-    setTotal(result.total);
-    setPages(result.pages);
-    setCurrentPage(result.currentPage);
-
-    // Seeing a notification counts as reading it. They stay highlighted as "New"
-    // for this visit; the sidebar badge refreshes right away.
-    const unseen = items.filter((n) => !n.read).map((n) => n.id);
+    // Seeing a notification counts as reading it; the bell badge updates right away.
+    const unseen = list.filter((n) => !n.read).map((n) => n.id);
     if (unseen.length) {
+      setFresh((f) => new Set([...f, ...unseen]));
       await markNotificationsSeen(unseen);
       router.refresh();
     }
   }
 
-  function toggleExpand(id: string) {
-    setExpandedId((prev) => (prev === id ? null : id));
-  }
+  useEffect(() => {
+    // Loading from the server, then storing the result, is what this effect is for.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unreadOnly]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  function timeAgo(date: Date) {
-    const now = new Date();
-    const d = new Date(date);
-    const seconds = Math.floor((now.getTime() - d.getTime()) / 1000);
-    if (seconds < 60) return "just now";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString();
-  }
+  const newCount = fresh.size;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight lg:text-[28px]">
-            Notifications
-          </h1>
+          <h1 className="text-3xl font-bold">Notifications</h1>
           <p className="mt-1 text-[15px] text-muted-foreground">
-            {total} notification{total !== 1 ? "s" : ""}{" "}
-            {unreadCount > 0 && (
-              <span className="font-bold text-brand">
-                — {unreadCount} new
-              </span>
-            )}
+            {items === null ? "Loading…" : newCount > 0 ? `${newCount} new since your last visit` : "You're all caught up."}
           </p>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-semibold text-muted-foreground">
-            Filter
-          </span>
-        </div>
-        {/* Drawn only in the browser: the dropdown's generated ids otherwise differ from the server's. */}
-        {mounted ? (
-          <Select value={tagFilter} onValueChange={setTagFilter}>
-            <SelectTrigger className="h-10 w-40 rounded-full border text-sm font-semibold">
-              <SelectValue placeholder="All tags" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tags</SelectItem>
-              {NOTIFICATION_TAGS.map((t) => (
-                <SelectItem key={t} value={t}>
-                  <span className="capitalize">{t}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <span aria-hidden className="h-10 w-40 rounded-full border border-border" />
-        )}
-        <button
-          className={cn(
-            "flex h-10 items-center gap-1.5 rounded-full border px-3 text-sm font-bold transition-colors",
-            unreadOnly ? "border-transparent bg-brand-soft text-brand" : "border-border text-muted-foreground hover:bg-muted"
-          )}
-          onClick={() => setUnreadOnly(!unreadOnly)}
-        >
-          <Bell className="h-4 w-4" />
-          Unread only
-        </button>
-      </div>
-
-      {/* Notification list */}
-      {notifications.length === 0 ? (
-        <EmptyState
-          icon={<Inbox className="h-8 w-8" />}
-          title="No notifications"
-          description={unreadOnly ? "You've read all your notifications." : "You're all caught up."}
-        />
-      ) : (
-        <Panel className="divide-y divide-border overflow-hidden">
-          {notifications.map((n) => {
-            const isExpanded = expandedId === n.id;
-            return (
-              <div
-                key={n.id}
-                className={cn("transition-colors", !n.read && "bg-brand-soft/50")}
-              >
-                <button
-                  onClick={() => {
-                    toggleExpand(n.id);
-                  }}
-                  className="w-full text-left p-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    {/* Unread indicator */}
-                    <div className="pt-1 shrink-0">
-                      {!n.read ? (
-                        <div className="h-2.5 w-2.5 rounded-full bg-brand" />
-                      ) : (
-                        <div className="h-2.5 w-2.5" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3
-                          className={cn("truncate text-[15px]", !n.read ? "font-bold" : "font-semibold text-muted-foreground")}
-                        >
-                          {n.title}
-                        </h3>
-                        <span
-                          className={cn("shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", TAG_COLORS[n.tag] ?? TAG_COLORS.general)}
-                        >
-                          {n.tag}
-                        </span>
-                        {n.attachmentUrl && (
-                          <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        )}
-                      </div>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {n.description}
-                      </p>
-                    </div>
-
-                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-                      {timeAgo(n.createdAt)}
-                    </span>
-                  </div>
-                </button>
-
-                {isExpanded && (
-                  <div className="px-4 pb-4 pl-11 space-y-3">
-                    <div className="border-l-2 border-border pl-3">
-                      <p className="whitespace-pre-wrap text-[15px] leading-relaxed">
-                        {n.description}
-                      </p>
-                    </div>
-
-                    {n.attachmentUrl && (
-                      <a
-                        href={n.attachmentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={pressable("outline", "px-3 py-2 normal-case")}
-                      >
-                        <Download className="h-4 w-4" />
-                        <span>{n.attachmentName ?? "Download attachment"}</span>
-                      </a>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      {!n.read ? (
-                        <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-foreground">
-                          New
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                          <Check className="h-2.5 w-2.5" />
-                          Read
-                        </span>
-                      )}
-                    </div>
-                  </div>
+        <div className="flex items-center gap-2">
+          <nav className="inline-flex rounded-full bg-muted p-1" aria-label="Show">
+            {[
+              { id: false, label: "All" },
+              { id: true, label: "Unread" },
+            ].map((t) => (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => setUnreadOnly(t.id)}
+                className={cn(
+                  "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
+                  unreadOnly === t.id ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
-              </div>
-            );
-          })}
-        </Panel>
-      )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+          {unreadOnly && total > 0 && (
+            <button
+              type="button"
+              onClick={async () => {
+                await markAllNotificationsRead();
+                router.refresh();
+                void load(1, false);
+              }}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              Mark all read
+            </button>
+          )}
+        </div>
+      </div>
 
-      {/* Pagination */}
-      {pages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-muted-foreground">
-            Page {currentPage} of {pages}
+      {items === null ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <Panel className="flex flex-col items-center gap-2 px-6 py-12 text-center">
+          <Mascot mood="wave" size={96} />
+          <p className="mt-2 text-lg font-bold">{unreadOnly ? "No unread notifications" : "Nothing here yet"}</p>
+          <p className="max-w-sm text-[15px] text-muted-foreground">
+            Replies to your feedback, announcements and news about your account will show up here.
           </p>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-6 w-6"
-              disabled={currentPage <= 1}
-              onClick={() => load(currentPage - 1)}
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-6 w-6"
-              disabled={currentPage >= pages}
-              onClick={() => load(currentPage + 1)}
-            >
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
+        </Panel>
+      ) : (
+        <div className="space-y-3">
+          {items.map((n) => (
+            <NotificationCard key={n.id} n={n} isNew={fresh.has(n.id)} />
+          ))}
+          {page < pages && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => load(page + 1, true)}
+                className="rounded-full border-2 border-border px-5 py-2 text-sm font-semibold hover:bg-muted"
+              >
+                Show older
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+function NotificationCard({ n, isNew }: { n: NotificationItem; isNew: boolean }) {
+  const kind = KIND[n.tag] ?? KIND.general!;
+  const Icon = kind.icon;
+  const [open, setOpen] = useState(false);
+  const long = n.description.length > 220;
+  const internal = !!n.attachmentUrl?.startsWith("/");
+
+  return (
+    <Panel className={cn("flex gap-4 p-4 transition-colors", isNew && "border-brand/40 bg-brand-soft/40")}>
+      <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl", kind.tile)}>
+        <Icon className="h-5 w-5" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] font-semibold text-muted-foreground">{kind.label}</p>
+            <h2 className="mt-0.5 text-[16px] font-bold leading-snug">{stripEmoji(n.title)}</h2>
+          </div>
+          <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-muted-foreground">
+            {isNew && <span className="h-2 w-2 rounded-full bg-brand" aria-label="New" />}
+            {timeAgo(n.createdAt)}
+          </span>
+        </div>
+
+        {n.description && (
+          <p className={cn("mt-1 whitespace-pre-wrap break-words text-[15px] text-foreground/80", long && !open && "line-clamp-3")}>
+            {n.description}
+          </p>
+        )}
+        {long && (
+          <button type="button" onClick={() => setOpen((o) => !o)} className="mt-1 text-sm font-semibold text-brand hover:underline">
+            {open ? "Show less" : "Show more"}
+          </button>
+        )}
+
+        {n.attachmentUrl &&
+          (internal ? (
+            <Link
+              href={n.attachmentUrl as never}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground shadow-[0_3px_0_var(--brand-deep)] transition hover:brightness-110 active:translate-y-[3px] active:shadow-none"
+            >
+              {n.attachmentName ?? "Open"} <Arrow className="h-4 w-4" />
+            </Link>
+          ) : (
+            <a
+              href={n.attachmentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border-2 border-border px-4 py-1.5 text-sm font-semibold hover:bg-muted"
+            >
+              <Download className="h-4 w-4" /> {n.attachmentName ?? "Download"}
+            </a>
+          ))}
+      </div>
+    </Panel>
   );
 }

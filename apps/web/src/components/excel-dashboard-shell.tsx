@@ -1,5 +1,7 @@
 "use client";
 
+import { RivalBadge } from "@/components/rival-badge";
+import { Mascot } from "@/components/mascot";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -11,6 +13,7 @@ import {
   Award01Icon as Award,
   UserIcon as User,
   MoreHorizontalIcon as More,
+  MessageAdd01Icon as FeedbackIcon,
   Notification03Icon as Bell,
   FireIcon as Flame,
   FlashIcon as Zap,
@@ -79,13 +82,14 @@ export type ShellStats = {
   dailyGoalMinutes: number;
 };
 
-export type LeaderRow = { rank: number; name: string; avatarUrl: string | null; xp: number; isMe: boolean };
+export type LeaderRow = { rank: number; name: string; avatarUrl: string | null; xp: number; isMe: boolean; isRival?: boolean };
 
 export function ExcelDashboardShell({
   children,
   stats,
   unreadNotifications = 0,
   leaders = [],
+  session,
 }: {
   /** This week's top three, plus the learner if they're outside it. */
   leaders?: LeaderRow[];
@@ -103,16 +107,16 @@ export function ExcelDashboardShell({
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
 
   if (isLessonRoute(pathname)) {
-    return <div className="min-h-screen bg-background font-apple text-foreground">{children}</div>;
+    return <div className="min-h-screen bg-background pt-[var(--announcement-h,0px)] font-apple text-foreground">{children}</div>;
   }
 
   const showRail = !isWideRoute(pathname);
   const moreActive = MORE_PAGES.some((p) => pathname.startsWith(p.href));
 
   return (
-    <div className="flex min-h-screen bg-background font-apple text-foreground antialiased">
+    <div className="flex min-h-screen bg-background pt-[var(--announcement-h,0px)] font-apple text-foreground antialiased">
       {/* ── Sidebar (desktop) ── */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
+      <aside className="sticky top-[var(--announcement-h,0px)] hidden h-[calc(100vh-var(--announcement-h,0px))] w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
         <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[27px] font-bold tracking-tight text-brand">
           <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
           Excelio
@@ -150,7 +154,7 @@ export function ExcelDashboardShell({
       {/* ── Main column ── */}
       <div className="flex min-w-0 flex-1 flex-col pb-24 lg:pb-0">
         {/* Mobile top bar */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b-2 border-border bg-background px-4 lg:hidden">
+        <header className="sticky top-[var(--announcement-h,0px)] z-30 flex h-14 items-center justify-between border-b-2 border-border bg-background px-4 lg:hidden">
           <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] text-[22px] font-bold tracking-tight text-brand">
             <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
             Excelio
@@ -170,7 +174,7 @@ export function ExcelDashboardShell({
 
           {showRail && (
             <aside className="hidden w-[340px] shrink-0 xl:block">
-              <div className="sticky top-0 space-y-5 pb-6 pt-10">
+              <div className="sticky top-[var(--announcement-h,0px)] space-y-5 pb-6 pt-10">
                 {/* Top-aligned so the icons line up with the top of the first content card. */}
                 <div className="flex h-10 items-start">
                   <StatRow stats={stats} />
@@ -197,6 +201,7 @@ export function ExcelDashboardShell({
                     View leaderboard <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Panel>
+                {!pathname.startsWith("/dashboard/feedback") && <FeedbackInvite name={session?.user?.name} />}
               </div>
             </aside>
           )}
@@ -292,6 +297,7 @@ function LeaderList({ leaders }: { leaders: LeaderRow[] }) {
               </Avatar>
               <span className={cn("min-w-0 flex-1 truncate text-[15px] font-semibold", l.isMe && "text-brand")}>
                 {l.isMe ? "You" : l.name}
+                {l.isRival && <RivalBadge className="ml-1.5" />}
               </span>
               <span className="shrink-0 text-sm font-bold tabular-nums text-muted-foreground">{l.xp.toLocaleString()} XP</span>
             </div>
@@ -354,5 +360,27 @@ function QuestsPanel({ stats }: { stats?: ShellStats }) {
         })}
       </ul>
     </Panel>
+  );
+}
+
+/** Friendly, personal invitation in the right rail to send feedback. */
+function FeedbackInvite({ name }: { name?: string | null }) {
+  const first = name?.trim().split(/\s+/)[0];
+  return (
+    <Link
+      href="/dashboard/feedback"
+      className="group flex items-center gap-4 rounded-2xl border-2 border-b-[5px] border-border bg-card p-4 transition-colors hover:border-brand"
+    >
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-soft">
+        <Mascot mood="wave" size={46} faceOnly className="mt-1" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-bold leading-snug">
+          {first ? `Hey ${first}, tell us your feedback` : "Tell us your feedback"}
+        </span>
+        <span className="mt-0.5 block text-[13px] text-muted-foreground">Ideas, bugs, anything. We read every message.</span>
+      </span>
+      <FeedbackIcon className="h-5 w-5 shrink-0 text-brand transition-transform group-hover:scale-110" />
+    </Link>
   );
 }

@@ -3,7 +3,8 @@
 import prisma from "@Batman/db";
 
 import { requireAdmin, requireAuth } from "@/lib/auth-guards";
-import { FEEDBACK_CATEGORIES } from "@/lib/feedback-categories";
+import { FEEDBACK_CATEGORIES, FEEDBACK_MAX_LENGTH } from "@/lib/feedback-categories";
+import { notifyUsers } from "@/lib/notify";
 
 export async function submitFeedback(data: {
   category: string;
@@ -12,6 +13,7 @@ export async function submitFeedback(data: {
   const session = await requireAuth();
 
   if (!data.message.trim()) throw new Error("Message is required");
+  if (data.message.length > FEEDBACK_MAX_LENGTH) throw new Error("Message is too long");
   if (!FEEDBACK_CATEGORIES.some((c) => c.value === data.category)) {
     throw new Error("Invalid category");
   }
@@ -40,6 +42,8 @@ export async function getAdminFeedback(params?: {
   limit?: number;
   category?: string;
   status?: string;
+  /** "no": still waiting for a reply (and not closed), "yes": already replied to */
+  replied?: "yes" | "no";
 }) {
   await requireAdmin();
 
@@ -53,6 +57,11 @@ export async function getAdminFeedback(params?: {
   }
   if (params?.status && params.status !== "all") {
     where.status = params.status;
+  }
+  if (params?.replied === "no") {
+    where.AND = [{ OR: [{ adminNote: null }, { adminNote: "" }] }, { status: { not: "closed" } }];
+  } else if (params?.replied === "yes") {
+    where.AND = [{ adminNote: { not: null } }, { NOT: { adminNote: "" } }];
   }
 
   const [items, total] = await Promise.all([
@@ -88,30 +97,49 @@ export async function updateFeedbackStatus(
   status: string,
   adminNote?: string
 ) {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const validStatuses = ["open", "reviewed", "planned", "resolved", "closed"];
   if (!validStatuses.includes(status)) throw new Error("Invalid status");
 
-  return prisma.feedback.update({
+  const before = await prisma.feedback.findUnique({ where: { id }, select: { adminNote: true } });
+  const updated = await prisma.feedback.update({
     where: { id },
     data: {
       status,
       ...(adminNote !== undefined && { adminNote }),
     },
   });
+
+  // A new or changed reply: let the learner know in their notifications.
+  const reply = adminNote?.trim();
+  if (reply && reply !== (before?.adminNote ?? "").trim()) {
+    await notifyUsers(session.user.id, [updated.userId], {
+      title: "💬 We replied to your feedback",
+      description: reply.length > 280 ? `${reply.slice(0, 277)}…` : reply,
+      tag: "feedback",
+      linkUrl: "/dashboard/feedback",
+      linkLabel: "See the reply",
+    }).catch((e) => console.error("[feedback] reply notification failed", e));
+  }
+
+  return updated;
 }
 
 export async function getAdminFeedbackStats() {
   await requireAdmin();
 
-  const [total, open, reviewed, planned, resolved] = await Promise.all([
+  const [total, open, reviewed, planned, resolved, needsReply, replied] = await Promise.all([
     prisma.feedback.count(),
     prisma.feedback.count({ where: { status: "open" } }),
     prisma.feedback.count({ where: { status: "reviewed" } }),
     prisma.feedback.count({ where: { status: "planned" } }),
     prisma.feedback.count({ where: { status: "resolved" } }),
+    prisma.feedback.count({
+      where: { AND: [{ OR: [{ adminNote: null }, { adminNote: "" }] }, { status: { not: "closed" } }] },
+    }),
+    prisma.feedback.count({ where: { AND: [{ adminNote: { not: null } }, { NOT: { adminNote: "" } }] } }),
   ]);
 
-  return { total, open, reviewed, planned, resolved };
+  return { total, open, reviewed, planned, resolved, needsReply, replied };
 }

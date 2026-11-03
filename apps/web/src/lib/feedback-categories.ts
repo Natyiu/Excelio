@@ -5,3 +5,6 @@ export const FEEDBACK_CATEGORIES = [
   { value: "question", label: "Question" },
   { value: "other", label: "Other" },
 ] as const;
+
+/** Longest message a learner can send. */
+export const FEEDBACK_MAX_LENGTH = 2000;

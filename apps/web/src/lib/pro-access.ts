@@ -1,10 +1,9 @@
-import { auth } from "@Batman/auth";
-import { headers } from "next/headers";
 import { cache } from "react";
 import prisma from "@Batman/db";
 import { COURSES } from "@/data/lessons";
 import { listProductsForPricing } from "@/lib/actions/polar";
 import { getSubscriptionStatus } from "@/lib/subscription";
+import { getSessionCached } from "@/lib/request-cache";
 import type { Billing } from "@/lib/plans";
 
 /** Default when a chapter has no saved setting: the first 3 chapters are free. */
@@ -43,12 +42,18 @@ export async function visibleCourses() {
   return COURSES.filter((c) => !settings[c.id]?.hidden);
 }
 
+/** Whether the signed-in user is an admin. Admins can open every chapter and lesson, in any order, to try them. */
+export const isAdmin = cache(async (): Promise<boolean> => {
+  const session = await getSessionCached();
+  return session?.user?.role === "admin";
+});
+
 /** Whether the signed-in learner has an active Pro subscription. */
-export async function hasPro(): Promise<boolean> {
-  const session = await auth.api.getSession({ headers: await headers() });
+export const hasPro = cache(async (): Promise<boolean> => {
+  const session = await getSessionCached();
   if (!session?.user) return false;
   return (await getSubscriptionStatus(session.user.id)).isSubscribed;
-}
+});
 
 /** Names of the Excelio products in Polar. The store also holds other products, so match these exactly. */
 export const PRO_PRODUCT_NAMES: Record<Billing, string> = {

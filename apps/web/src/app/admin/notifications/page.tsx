@@ -56,6 +56,7 @@ const TAG_COLORS: Record<string, string> = {
   billing: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
   feature: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
   urgent: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200",
+  feedback: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
 };
 
 export default function AdminNotificationsPage() {

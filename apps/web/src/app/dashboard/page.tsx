@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   Tick02Icon as Check,
@@ -11,20 +11,22 @@ import {
   Book02Icon as Guidebook,
   CrownIcon as Crown,
 } from "@hugeicons/react";
-import { getDashboardStats } from "@/lib/actions/excel-learning";
-import { getChapterSettings, hasPro } from "@/lib/pro-access";
+import { getDashboardStatsCached } from "@/lib/request-cache";
+import { getChapterSettings, hasPro, isAdmin } from "@/lib/pro-access";
 import { getMyTestimonial } from "@/lib/actions/testimonials";
 import { claimGuestFromCookie } from "@/lib/guest-claim";
 import { GuestClaim } from "@/components/guest-claim";
 import { COURSES } from "@/data/lessons";
 import { pressable } from "@/components/game-ui";
+import { LEVELS, levelStyle } from "@/components/level-picker";
 import { Mascot } from "@/components/mascot";
 import { cn } from "@/lib/utils";
 import type { CourseData } from "@/types/excel-learning";
 import { ScrollIntoView } from "./scroll-into-view";
 
-type LessonState = "done" | "current" | "locked";
-type ChapterState = "done" | "current" | "locked";
+/** "open": not reached yet, but an admin can open it anyway. */
+type LessonState = "done" | "current" | "locked" | "open";
+type ChapterState = "done" | "current" | "locked" | "open";
 
 /** Lessons finished before we ask for a review. */
 const REVIEW_AFTER_LESSONS = 5;
@@ -34,14 +36,17 @@ const DIFFICULTY_LABEL = { beginner: "Beginner", intermediate: "Intermediate", a
 export default async function DashboardPage() {
   // A lesson finished as a guest is saved before anything else, so it shows as done.
   const claimed = await claimGuestFromCookie();
-  const [stats, pro, review, chapterAccess] = await Promise.all([
-    getDashboardStats(),
+  const [stats, pro, review, chapterAccess, admin] = await Promise.all([
+    getDashboardStatsCached(),
     hasPro(),
     getMyTestimonial().catch(() => null),
     getChapterSettings(),
+    isAdmin(),
   ]);
   // Chapters the founder has hidden are left out entirely, including from the lesson order.
-  const courses = COURSES.filter((c) => !chapterAccess[c.id]?.hidden);
+  const visible = COURSES.filter((c) => !chapterAccess[c.id]?.hidden);
+  // Admins also see hidden chapters, so they can try them before publishing.
+  const courses = admin ? COURSES : visible;
 
   const doneIds = new Set(
     (stats?.lessonProgress ?? [])
@@ -51,18 +56,48 @@ export default async function DashboardPage() {
 
   // Lessons unlock strictly in order: the first unfinished one is playable,
   // everything after it is locked until the one before is done.
-  const currentId = courses.flatMap((c) => c.lessons).find((l) => !doneIds.has(l.id))?.id;
+  const currentId = visible.flatMap((c) => c.lessons).find((l) => !doneIds.has(l.id))?.id;
   const lessonState = (lessonId: string): LessonState =>
-    doneIds.has(lessonId) ? "done" : lessonId === currentId ? "current" : "locked";
+    doneIds.has(lessonId) ? "done" : lessonId === currentId ? "current" : admin ? "open" : "locked";
 
   const chapterState = (course: CourseData): ChapterState => {
     if (course.lessons.every((l) => doneIds.has(l.id))) return "done";
-    return course.lessons.some((l) => l.id === currentId) ? "current" : "locked";
+    if (course.lessons.some((l) => l.id === currentId)) return "current";
+    return admin ? "open" : "locked";
   };
 
   const currentChapter = courses.find((c) => chapterState(c) === "current");
   // Ask for a review once a learner has had a real taste of the course.
   const askForReview = !review && doneIds.size >= REVIEW_AFTER_LESSONS;
+
+
+  const renderChapter = (course: CourseData, i: number) => {
+        const state = chapterState(course);
+
+        if (state === "current") {
+          return (
+            <section key={course.id} id={course.id} className="scroll-mt-6 pb-6" style={chapterColour(i)}>
+              <ChapterBanner course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} hidden={!!chapterAccess[course.id]?.hidden} />
+              <LessonList course={course} lessonState={lessonState} className="mt-8 px-2" />
+            </section>
+          );
+        }
+
+        if (state === "done" || state === "open") {
+          // Finished chapters fold away; open one to review its lessons.
+          return (
+            <details key={course.id} id={course.id} className="group" style={chapterColour(i)}>
+              <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <ChapterBanner course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} hidden={!!chapterAccess[course.id]?.hidden} />
+              </summary>
+              <LessonList course={course} lessonState={lessonState} className="mt-6 px-2 pb-4" />
+            </details>
+          );
+        }
+
+        // Locked chapters are shown so learners see what's ahead, but can't be opened.
+        return <ChapterBanner key={course.id} course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} hidden={!!chapterAccess[course.id]?.hidden} />;
+  };
 
   return (
     <div className="space-y-4">
@@ -85,38 +120,53 @@ export default async function DashboardPage() {
       {currentChapter && currentChapter !== courses[0] && <ScrollIntoView targetId={currentChapter.id} />}
 
       {courses.map((course, i) => {
-        const state = chapterState(course);
-
-        if (state === "current") {
-          return (
-            <section key={course.id} id={course.id} className="scroll-mt-6 pb-6" style={chapterColour(i)}>
-              <ChapterBanner course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} />
-              <LessonList course={course} lessonState={lessonState} className="mt-8 px-2" />
-            </section>
-          );
-        }
-
-        if (state === "done") {
-          // Finished chapters fold away; open one to review its lessons.
-          return (
-            <details key={course.id} id={course.id} className="group" style={chapterColour(i)}>
-              <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                <ChapterBanner course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} />
-              </summary>
-              <LessonList course={course} lessonState={lessonState} className="mt-6 px-2 pb-4" />
-            </details>
-          );
-        }
-
-        // Locked chapters are shown so learners see what's ahead, but can't be opened.
-        return <ChapterBanner key={course.id} course={course} index={i} state={state} pro={!pro && chapterAccess[course.id]?.access === "pro"} />;
+        // A header where the level changes: Beginner, Intermediate, Advanced.
+        const newLevel = i === 0 || courses[i - 1]?.difficulty !== course.difficulty;
+        return (
+          <Fragment key={course.id}>
+            {newLevel && (
+              <LevelDivider level={course.difficulty} count={courses.filter((c) => c.difficulty === course.difficulty).length} />
+            )}
+            {renderChapter(course, i)}
+          </Fragment>
+        );
       })}
     </div>
   );
 }
 
+/** Section header between levels on the chapter path, in that level's colour. */
+function LevelDivider({ level, count }: { level: CourseData["difficulty"]; count: number }) {
+  const l = LEVELS.find((x) => x.id === level);
+  return (
+    <div style={levelStyle(level)} className="flex items-center gap-3 pb-1 pt-6 first:pt-0">
+      <span className="h-[3px] flex-1 rounded-full bg-brand/25" />
+      <span className="flex items-center gap-2 rounded-full bg-brand px-4 py-1.5 text-[13px] font-extrabold uppercase tracking-wider text-white shadow-[0_3px_0_var(--brand-deep)]">
+        {l?.label ?? level}
+        <span className="rounded-full bg-white/25 px-2 py-px text-[11px] font-bold normal-case tracking-normal">
+          {count} {count === 1 ? "chapter" : "chapters"}
+        </span>
+      </span>
+      <span className="h-[3px] flex-1 rounded-full bg-brand/25" />
+    </div>
+  );
+}
+
 /** `pro`: the chapter needs Pro and the learner doesn't have it, so it gets a Pro chip. */
-function ChapterBanner({ course, index, state, pro }: { course: CourseData; index: number; state: ChapterState; pro: boolean }) {
+function ChapterBanner({
+  course,
+  index,
+  state,
+  pro,
+  hidden = false,
+}: {
+  course: CourseData;
+  index: number;
+  state: ChapterState;
+  pro: boolean;
+  /** Admin-only view of a chapter learners can't see. */
+  hidden?: boolean;
+}) {
   const locked = state === "locked";
   return (
     <div
@@ -147,6 +197,11 @@ function ChapterBanner({ course, index, state, pro }: { course: CourseData; inde
           {pro && (
             <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-[#7c3aed] px-2 py-0.5 text-[11px] font-bold normal-case tracking-normal text-white opacity-100">
               <Crown className="h-3 w-3" /> Pro
+            </span>
+          )}
+          {hidden && (
+            <span className="ml-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold normal-case tracking-normal text-white">
+              Hidden
             </span>
           )}
         </p>
@@ -289,6 +344,7 @@ function LessonCoin({ state }: { state: LessonState }) {
       {state === "done" && <Check className="h-7 w-7" />}
       {state === "current" && <Star className="h-7 w-7" />}
       {state === "locked" && <Lock className="h-6 w-6" />}
+      {state === "open" && <ArrowRight className="h-6 w-6" />}
     </span>
   );
 }
@@ -363,14 +419,14 @@ function LessonList({
                   </Link>
                 </div>
               </div>
-            ) : state === "done" ? (
+            ) : state === "done" || state === "open" ? (
               <Link
                 href={href as never}
                 className="group/row flex h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl px-3 transition-colors hover:bg-muted/60"
               >
                 <span className="truncate text-[15px] font-medium">{lesson.title}</span>
                 <span className="shrink-0 text-sm font-medium text-brand opacity-0 transition-opacity group-hover/row:opacity-100">
-                  Review
+                  {state === "done" ? "Review" : "Open"}
                 </span>
               </Link>
             ) : (

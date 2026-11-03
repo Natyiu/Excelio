@@ -1,0 +1,20 @@
+/// An announcement written by an admin, shown as a card at the top of the learner dashboard.
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  message     String
+  /// Card style: "news", "celebrate", "update" or "warning"
+  tone        String    @default("news")
+  /// Optional button, e.g. "Try it" → "/dashboard/daily-challenge"
+  ctaLabel    String?
+  ctaUrl      String?
+  /// Unpublished announcements are kept as drafts
+  published   Boolean   @default(true)
+  /// Stop showing it after this time (optional)
+  endsAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([published, createdAt])
+  @@map("announcement")
+}

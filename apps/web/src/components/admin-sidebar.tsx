@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getAdminBadges, type AdminBadges } from "@/lib/actions/admin-badges";
 import { useTheme } from "next-themes";
 
 import { useMounted } from "@/lib/use-mounted";
@@ -24,10 +26,83 @@ import {
   BookOpen01Icon as Book,
   ChartLineData01Icon as Insights,
   CrownIcon as Crown,
+  ChartIncreaseIcon as Revenue,
+  RankingIcon as Ranking,
+  Megaphone01Icon as Megaphone,
 } from "@hugeicons/react";
 import { BrandLogo } from "@/components/brand-logo";
 
-type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
+type BadgeKey = keyof AdminBadges;
+type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean; badge?: BadgeKey };
+
+/** Each badge has its own colour so you can tell them apart at a glance. */
+const BADGE_COLOUR: Record<BadgeKey, string> = {
+  feedback: "bg-orange-500 text-white",
+  testimonials: "bg-amber-400 text-amber-950",
+  paidUsers: "bg-violet-600 text-white",
+  users: "bg-sky-500 text-white",
+};
+const BADGE_HINT: Record<BadgeKey, string> = {
+  feedback: "new since you last looked",
+  testimonials: "new since you last looked",
+  paidUsers: "new since you last looked",
+  users: "new since you last looked",
+};
+
+// "New since you last looked" is tracked in the admin's browser; opening a page clears its badge.
+const BADGE_KEYS: BadgeKey[] = ["feedback", "testimonials", "paidUsers", "users"];
+const SEEN_PATH: Record<BadgeKey, string> = {
+  feedback: "/admin/feedback",
+  testimonials: "/admin/testimonials",
+  paidUsers: "/admin/paid-users",
+  users: "/admin/users",
+};
+const seenKey = (k: BadgeKey) => `excelio:admin-seen:${k}`;
+const readSeen = (k: BadgeKey) => {
+  try {
+    return localStorage.getItem(seenKey(k)) ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+/** Badge counts, refreshed on every admin page change. Opening a page clears its badge. */
+function useAdminBadges(pathname: string): AdminBadges | null {
+  const [badges, setBadges] = useState<AdminBadges | null>(null);
+  useEffect(() => {
+    for (const k of BADGE_KEYS) {
+      // Never looked before (new browser, or first time): start counting from now, so
+      // people you've already seen are never counted as new.
+      if (!readSeen(k) || pathname.startsWith(SEEN_PATH[k])) {
+        try {
+          localStorage.setItem(seenKey(k), new Date().toISOString());
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    let cancelled = false;
+    getAdminBadges(Object.fromEntries(BADGE_KEYS.map((k) => [k, readSeen(k)])))
+      .then((b) => !cancelled && setBadges(b))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+  return badges;
+}
+
+function Badge({ k, count, className }: { k: BadgeKey; count: number; className?: string }) {
+  if (!count) return null;
+  return (
+    <span
+      title={`${count} ${BADGE_HINT[k]}`}
+      className={`ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums ${BADGE_COLOUR[k]} ${className ?? ""}`}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
 // Grouped like a founder thinks about the product.
 const adminGroups: { title: string; items: NavItem[] }[] = [
@@ -43,22 +118,25 @@ const adminGroups: { title: string; items: NavItem[] }[] = [
     title: "Learning",
     items: [
       { name: "Curriculum", href: "/admin/curriculum", icon: Book },
-      { name: "Testimonials", href: "/admin/testimonials", icon: Star },
-      { name: "Feedback", href: "/admin/feedback", icon: MessageSquare },
+      { name: "Testimonials", href: "/admin/testimonials", icon: Star, badge: "testimonials" },
+      { name: "Feedback", href: "/admin/feedback", icon: MessageSquare, badge: "feedback" },
     ],
   },
   {
     title: "People",
     items: [
-      { name: "Users", href: "/admin/users", icon: Users },
+      { name: "Users", href: "/admin/users", icon: Users, badge: "users" },
+      { name: "Rivals", href: "/admin/rivals", icon: Ranking },
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
+      { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
       { name: "Blog", href: "/admin/blog", icon: FileText },
     ],
   },
   {
     title: "Billing",
     items: [
-      { name: "Paid Users", href: "/admin/paid-users", icon: Crown },
+      { name: "Revenue", href: "/admin/revenue", icon: Revenue },
+      { name: "Paid Users", href: "/admin/paid-users", icon: Crown, badge: "paidUsers" },
     ],
   },
   {
@@ -95,6 +173,7 @@ function ThemeToggle() {
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const badges = useAdminBadges(pathname);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 shrink-0 flex-col border-r border-border/60 bg-background px-3 py-5 md:flex">
@@ -122,6 +201,7 @@ export function AdminSidebar() {
                   >
                     <item.icon className={active ? "h-5 w-5 text-brand" : "h-5 w-5 text-muted-foreground"} />
                     {item.name}
+                    {item.badge && badges && <Badge k={item.badge} count={badges[item.badge]} />}
                   </Link>
                 );
               })}
@@ -146,6 +226,7 @@ export function AdminSidebar() {
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const badges = useAdminBadges(pathname);
 
   return (
     <div className="-mx-1 mb-6 flex gap-1.5 overflow-x-auto px-1 pb-1 md:hidden">
@@ -159,7 +240,10 @@ export function AdminMobileNav() {
               : "shrink-0 rounded-full border-2 border-border px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground"
           }
         >
-          {item.name}
+          <span className="flex items-center gap-1.5">
+            {item.name}
+            {item.badge && badges && <Badge k={item.badge} count={badges[item.badge]} className="ml-0" />}
+          </span>
         </Link>
       ))}
     </div>

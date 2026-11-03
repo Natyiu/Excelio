@@ -1,5 +1,6 @@
 import { getPaidUsers, type PaidUser } from "@/lib/actions/polar";
 import { PRO_LIFETIME, PRO_MONTHLY, PRO_YEARLY } from "@/lib/plans";
+import { RemoveProButtons } from "./remove-pro-button";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export default async function AdminPaidUsersPage() {
       <div>
         <h1 className="text-[28px] font-bold tracking-tight">Paid Users</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Everyone who bought Pro, from Polar webhooks. Updated on every visit.
+          Everyone who bought Pro, from Polar webhooks. Updated on every visit. Cancel a renewal or remove Pro from the Actions column.
         </p>
       </div>
 
@@ -76,6 +77,7 @@ export default async function AdminPaidUsersPage() {
                 <th className="px-4 py-3">Plan</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 whitespace-nowrap">Paid since</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
@@ -96,6 +98,17 @@ export default async function AdminPaidUsersPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap tabular-nums">{date(u.since)}</td>
+                  <td className="px-4 py-3">
+                    {u.active && (
+                      <RemoveProButtons
+                        userId={u.userId}
+                        name={u.name}
+                        lifetime={u.plan === "lifetime"}
+                        canCancelRenewal={u.plan !== "lifetime" && !u.cancelAtPeriodEnd}
+                        periodEnd={u.currentPeriodEnd}
+                      />
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

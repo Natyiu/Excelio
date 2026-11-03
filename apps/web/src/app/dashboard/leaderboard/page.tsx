@@ -4,6 +4,7 @@ import { CrownIcon } from "@hugeicons/react";
 import { getLeaderboard } from "@/lib/actions/excel-learning";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mascot } from "@/components/mascot";
+import { RivalBadge } from "@/components/rival-badge";
 import { Panel, SectionTitle } from "@/components/game-ui";
 import { cn } from "@/lib/utils";
 
@@ -142,6 +143,7 @@ function PodiumSpot({ entry, spot }: { entry?: Entry; spot: (typeof PODIUM)[numb
           <p className={cn("mt-2 max-w-full truncate px-1 text-center font-bold", entry.isCurrentUser && "text-brand")}>
             {entry.isCurrentUser ? "You" : entry.displayName}
           </p>
+          {entry.isRival && <RivalBadge className="-mt-0.5 mb-0.5" />}
           <p className="text-sm font-semibold tabular-nums text-muted-foreground">{entry.xp.toLocaleString()} XP</p>
         </>
       ) : (
@@ -176,6 +178,7 @@ function Row({ entry: e, leaderXp }: { entry: Entry; leaderXp: number }) {
         <p className={cn("truncate font-bold", e.isCurrentUser && "text-brand")}>
           {e.displayName}
           {e.isCurrentUser && <span className="ml-2 text-sm font-semibold text-muted-foreground">(you)</span>}
+          {e.isRival && <RivalBadge className="ml-2" />}
         </p>
         <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-muted">
           <span className="block h-full rounded-full bg-brand" style={{ width: `${Math.max(4, (e.xp / leaderXp) * 100)}%` }} />
