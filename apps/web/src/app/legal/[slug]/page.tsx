@@ -15,7 +15,7 @@ const TITLES: Record<string, string> = {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   if (slug !== "privacy" && slug !== "terms") return { title: "Not found" };
-  return { title: TITLES[slug] };
+  return { title: `${TITLES[slug]} | Excelio`, alternates: { canonical: `/legal/${slug}` } };
 }
 
 export default async function LegalPage({ params }: Props) {

@@ -203,6 +203,7 @@ const FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] 
       { label: "Start learning free", href: "/start" },
       { label: "How it works", href: "#how" },
       { label: "Curriculum", href: "#path" },
+      { label: "Free Excel guide", href: "/learn-excel" },
       { label: "Pricing", href: "/pricing" },
     ],
   },
@@ -515,6 +516,11 @@ export default async function LandingPage() {
                 );
               })}
             </div>
+            <p className="mt-8 text-center">
+              <Link href={"/learn-excel" as never} className="text-[15px] font-semibold text-brand underline-offset-4 hover:underline">
+                Read the free Excel guide, chapter by chapter →
+              </Link>
+            </p>
           </div>
         </section>
 

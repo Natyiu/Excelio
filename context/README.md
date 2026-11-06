@@ -13,6 +13,7 @@ read all of them up front.
 | [storage.md](./storage.md) | File upload/download, Supabase Storage |
 | [email.md](./email.md) | Anything that sends an email |
 | [design.md](./design.md) | UI components, styling, forms, loading states |
+| [geo.md](./geo.md) | Public guide pages, llms.txt, AI search, how to measure it |
 
 ## What this repo is
 

@@ -3,8 +3,9 @@ import { getPublishedPosts } from "@/lib/actions/blog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const metadata = {
-  title: "Blog",
-  description: "Blog posts and updates.",
+  title: "Excel Tips and Updates | Excelio Blog",
+  description: "Excel tips, guides and product updates from Excelio.",
+  alternates: { canonical: "/blog" },
 };
 
 export default async function BlogPage() {

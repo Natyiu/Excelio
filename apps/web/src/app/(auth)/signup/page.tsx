@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthConfig } from "@/lib/actions/user";
 import { SignUpForm } from "@/components/sign-up-form";
+
+export const metadata: Metadata = {
+  title: "Create your free account | Excelio",
+  description: "Create a free Excelio account to save your progress and learn Excel with hands-on lessons in a real spreadsheet.",
+  alternates: { canonical: "/signup" },
+};
 
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ claim?: string }> }) {
   const { claim } = await searchParams;

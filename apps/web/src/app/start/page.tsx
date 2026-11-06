@@ -9,6 +9,7 @@ import { getChapterSettings, visibleCourses } from "@/lib/pro-access";
 export const metadata: Metadata = {
   title: "Start learning Excel free | Excelio",
   description: "See the full Excel path and start your first hands-on lesson right now, no account needed.",
+  alternates: { canonical: "/start" },
 };
 
 const SIGNUP = "/signup?claim=1";

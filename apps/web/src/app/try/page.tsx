@@ -8,6 +8,7 @@ import { getGuestLesson } from "@/lib/actions/guest";
 export const metadata: Metadata = {
   title: "Try your first Excel lesson free | Excelio",
   description: "Start learning Excel right now, no account needed. A hands-on lesson in a real spreadsheet.",
+  alternates: { canonical: "/try" },
 };
 
 /** The first lesson, playable without an account. Signing up at the end claims the XP. */

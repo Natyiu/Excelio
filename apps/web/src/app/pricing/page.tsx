@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@Batman/auth";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -8,6 +9,13 @@ import { listProductsForPricing } from "@/lib/actions/polar";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { Button } from "@/components/ui/button";
 import { PricingCard } from "@/components/pricing-card";
+import { PRO_LIFETIME, PRO_MONTHLY, PRO_YEARLY } from "@/lib/plans";
+
+export const metadata: Metadata = {
+  title: "Pricing: Free and Pro Plans | Excelio",
+  description: `Start learning Excel free. Excelio Pro unlocks every chapter for $${PRO_MONTHLY} a month, $${PRO_YEARLY} a year or $${PRO_LIFETIME} once.`,
+  alternates: { canonical: "/pricing" },
+};
 
 export default async function PricingPage() {
   const session = await auth.api.getSession({

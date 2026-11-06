@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getAllLessons } from "@/data/lessons";
 import { parseNotes } from "@/components/learning/lesson-notes";
-import { parseSpec, runDemo } from "@/components/learning/sheet-demo";
+import { parseSpec, runDemo } from "@/lib/sheet-demo-run";
 
 describe("lesson demos", () => {
   it("every demo step parses and its formulas calculate", () => {

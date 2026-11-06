@@ -26,7 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
     const settings = await getAppSettings();
     const title =
       (settings as { metaTitle?: string | null }).metaTitle?.trim() ||
-      (settings as { appName?: string }).appName ||
+      // "Batman" is the boilerplate's default name, never a title to show.
+      ((settings as { appName?: string }).appName !== "Batman" && (settings as { appName?: string }).appName) ||
       DEFAULT_TITLE;
     const description =
       (settings as { metaDescription?: string | null }).metaDescription?.trim() ||
