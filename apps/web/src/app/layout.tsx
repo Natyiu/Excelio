@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 
 import "../index.css";
 import Providers from "@/components/providers";
@@ -75,6 +76,12 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <Script
+          src="https://datafa.st/js/script.js"
+          data-website-id="dfid_AmNAOIzR5jlGvxd91XVYz"
+          data-domain="excelio.space"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
