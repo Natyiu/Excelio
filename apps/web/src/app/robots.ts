@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Signed-in and private areas have nothing for search engines.
-      disallow: ["/dashboard", "/admin", "/api", "/onboarding", "/verify-email", "/reset-password", "/maintenance"],
+      disallow: ["/start/", "/dashboard", "/admin", "/api", "/onboarding", "/verify-email", "/reset-password", "/maintenance"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

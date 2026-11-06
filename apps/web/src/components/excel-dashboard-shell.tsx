@@ -51,12 +51,19 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Profile", href: "/dashboard/profile", icon: User },
 ];
 
-/** Without an account Learn is the only page there is, so the rest lead to sign-up. */
-const SIGNUP_HREF = "/signup";
-const GUEST_NAV_ITEMS: NavItem[] = NAV_ITEMS.map((item) => ({
-  ...item,
-  href: item.href === "/dashboard" ? "/start" : SIGNUP_HREF,
-}));
+/** Guests get a browse-only copy of each page under /start. There's no profile until they have an account. */
+const GUEST_HREFS: Record<string, string> = {
+  Learn: "/start",
+  Practice: "/start/practice",
+  Challenge: "/start/challenge",
+  Leaderboard: "/start/leaderboard",
+  Achievements: "/start/achievements",
+  Notifications: "/start/notifications",
+};
+const GUEST_NAV_ITEMS: NavItem[] = NAV_ITEMS.flatMap((item) => {
+  const href = GUEST_HREFS[item.label];
+  return href ? [{ ...item, href, match: undefined }] : [];
+});
 
 // Secondary pages are reached from the More page instead of the main nav.
 const MORE_PAGES = [
@@ -67,6 +74,7 @@ const MORE_PAGES = [
 ];
 
 function isActive(pathname: string, item: { href: string; match?: string[] }) {
+  if (item.href === "/start") return pathname === "/start";
   if (item.href === "/dashboard") {
     return pathname === "/dashboard" || (item.match?.some((m) => pathname.startsWith(m)) ?? false);
   }
@@ -128,12 +136,12 @@ export function ExcelDashboardShell({
   }
 
   const showRail = !isWideRoute(pathname);
-  const moreActive = MORE_PAGES.some((p) => pathname.startsWith(p.href));
   const guest = !session;
+  const moreActive = guest ? pathname.startsWith("/start/more") : MORE_PAGES.some((p) => pathname.startsWith(p.href));
   const navItems = guest ? GUEST_NAV_ITEMS : NAV_ITEMS;
   // Found by label, because guests' hrefs repeat.
   const profileItem = navItems.find((item) => item.label === "Profile");
-  const moreHref = guest ? SIGNUP_HREF : "/dashboard/more";
+  const moreHref = guest ? "/start/more" : "/dashboard/more";
   const homeHref = guest ? "/" : "/dashboard";
 
   return (
@@ -204,7 +212,7 @@ export function ExcelDashboardShell({
                 <div className="flex h-10 items-start">
                   <StatRow stats={stats} />
                 </div>
-                <QuestsPanel stats={stats} viewAllHref={guest ? SIGNUP_HREF : "/dashboard/achievements"} />
+                <QuestsPanel stats={stats} viewAllHref={guest ? "/start/achievements" : "/dashboard/achievements"} />
                 <Panel data-tour="leaderboard-card" className="p-5">
                   <p className="text-lg font-semibold">Streak leaderboard</p>
                   {guest ? (
@@ -226,14 +234,12 @@ export function ExcelDashboardShell({
                       </p>
                     </div>
                   )}
-                  {!guest && (
-                    <Link
-                      href="/dashboard/leaderboard"
-                      className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand"
-                    >
-                      View leaderboard <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  )}
+                  <Link
+                    href={(guest ? "/start/leaderboard" : "/dashboard/leaderboard") as never}
+                    className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand"
+                  >
+                    View leaderboard <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </Panel>
                 {!guest && !pathname.startsWith("/dashboard/feedback") && <FeedbackInvite name={session.user.name} />}
               </div>

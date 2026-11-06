@@ -25,6 +25,7 @@ export function AppearanceRow() {
     <button
       type="button"
       role="switch"
+      data-guest-open
       aria-checked={isDark}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-muted/50"

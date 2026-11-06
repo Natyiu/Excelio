@@ -1,6 +1,7 @@
 "use server";
 
 import { levelFromCompleted, liveStreak } from "@/lib/learner-level";
+import { publicName } from "@/lib/public-name";
 import { auth } from "@Batman/auth";
 import { isProCourse } from "@/lib/pro-access";
 import { getSubscriptionStatus } from "@/lib/subscription";
@@ -527,6 +528,24 @@ export async function getLeaderboard(
 ): Promise<LeaderboardEntry[]> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return [];
+  return buildLeaderboard(period, session.user.id);
+}
+
+/**
+ * The streak board for visitors without an account. The page is public, so learners show as
+ * "Cheryl R." with no photo or id. Rivals are made up, so they stay as they are.
+ */
+export async function getPublicLeaderboard(): Promise<LeaderboardEntry[]> {
+  const board = await buildLeaderboard("current", null);
+  return board.map((e) =>
+    e.isRival ? e : { ...e, userId: `learner:${e.rank}`, displayName: publicName(e.displayName), avatarUrl: null }
+  );
+}
+
+async function buildLeaderboard(
+  period: "current" | "xp" | "longest" | "weekly" | "alltime",
+  viewerId: string | null
+): Promise<LeaderboardEntry[]> {
   const board: "current" | "xp" | "longest" =
     period === "xp" || period === "alltime" ? "xp" : period === "longest" ? "longest" : "current";
 
@@ -571,7 +590,7 @@ export async function getLeaderboard(
         streak: board === "longest" ? p.longestStreak : liveStreak(p.currentStreak, p.lastActivityDate),
         xp: p.totalXp,
         level: levelFromCompleted(doneCount.get(p.id) ?? 0),
-        isCurrentUser: p.id === session.user.id,
+        isCurrentUser: p.id === viewerId,
         isRival: false,
       };
     })
