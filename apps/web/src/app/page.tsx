@@ -200,7 +200,7 @@ const FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] 
   {
     title: "Learn",
     links: [
-      { label: "Start learning free", href: "/try" },
+      { label: "Start learning free", href: "/start" },
       { label: "How it works", href: "#how" },
       { label: "Curriculum", href: "#path" },
       { label: "Pricing", href: "/pricing" },
@@ -238,8 +238,8 @@ export default async function LandingPage() {
   const approved = await getApprovedTestimonials(3).catch(() => []);
   const testimonials = [...FEATURED_TESTIMONIALS, ...approved].slice(0, 3);
   // Same wording for everyone; signed-in visitors just land on their dashboard.
-  // Signed-out visitors go straight into the first lesson; they sign up at the end to claim the XP.
-  const start = { href: signedIn ? "/dashboard" : "/try", label: "Start learning for free" };
+  // Signed-out visitors see the Learn page and start the first lesson from there; they sign up at the end to claim the XP.
+  const start = { href: signedIn ? "/dashboard" : "/start", label: "Start learning for free" };
 
   return (
     <>

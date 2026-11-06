@@ -108,7 +108,7 @@ export function LessonWorkspace({
   guest = false,
 }: LessonWorkspaceProps) {
   const router = useRouter();
-  const exitHref = guest ? "/" : challenge?.exitHref ?? "/dashboard";
+  const exitHref = guest ? "/start" : challenge?.exitHref ?? "/dashboard";
 
   // Lessons open on their notes; returning learners mid-lesson go straight to practice.
   const notes = lesson.content.conceptOverview;
@@ -687,10 +687,10 @@ export function LessonWorkspace({
                 </Panel>
                 <div className="space-y-3">
                   <button type="button" onClick={() => router.push("/signup?claim=1" as never)} className={pressable("brand", "w-full py-3")}>
-                    Claim my XP
+                    Create free account
                   </button>
                   <button type="button" onClick={() => router.push("/login?claim=1" as never)} className={pressable("outline", "w-full py-3")}>
-                    I already have an account
+                    Sign in
                   </button>
                 </div>
               </>

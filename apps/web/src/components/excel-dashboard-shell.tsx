@@ -41,8 +41,6 @@ type NavItem = {
   match?: string[];
 };
 
-const PROFILE_HREF = "/dashboard/profile";
-
 const NAV_ITEMS: NavItem[] = [
   { label: "Learn", href: "/dashboard", icon: Home, match: ["/dashboard/learn"] },
   { label: "Practice", href: "/dashboard/practice", icon: Sandbox },
@@ -52,7 +50,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Profile", href: "/dashboard/profile", icon: User },
 ];
-const profileItem = NAV_ITEMS.find((item) => item.href === PROFILE_HREF);
+
+/** Without an account Learn is the only page there is, so the rest lead to sign-up. */
+const SIGNUP_HREF = "/signup";
+const GUEST_NAV_ITEMS: NavItem[] = NAV_ITEMS.map((item) => ({
+  ...item,
+  href: item.href === "/dashboard" ? "/start" : SIGNUP_HREF,
+}));
 
 // Secondary pages are reached from the More page instead of the main nav.
 const MORE_PAGES = [
@@ -109,8 +113,8 @@ export function ExcelDashboardShell({
   children: React.ReactNode;
   /** Shown as a badge on Notifications. */
   unreadNotifications?: number;
-  /** The signed-in session. Account actions now live on the More page, which loads its own. */
-  session: typeof authClient.$Infer.Session;
+  /** The signed-in session, or none for a guest on /start. Account actions now live on the More page, which loads its own. */
+  session?: typeof authClient.$Infer.Session;
   stats?: ShellStats;
 }) {
   const pathname = usePathname();
@@ -125,28 +129,34 @@ export function ExcelDashboardShell({
 
   const showRail = !isWideRoute(pathname);
   const moreActive = MORE_PAGES.some((p) => pathname.startsWith(p.href));
+  const guest = !session;
+  const navItems = guest ? GUEST_NAV_ITEMS : NAV_ITEMS;
+  // Found by label, because guests' hrefs repeat.
+  const profileItem = navItems.find((item) => item.label === "Profile");
+  const moreHref = guest ? SIGNUP_HREF : "/dashboard/more";
+  const homeHref = guest ? "/" : "/dashboard";
 
   return (
     <div className="flex min-h-screen bg-background pt-[var(--announcement-h,0px)] font-apple text-foreground antialiased">
-      <AppTour userId={session.user.id} createdAt={session.user.createdAt} />
+      {session && <AppTour userId={session.user.id} createdAt={session.user.createdAt} />}
       {/* ── Sidebar (desktop) ── */}
       <aside className="sticky top-[var(--announcement-h,0px)] hidden h-[calc(100vh-var(--announcement-h,0px))] w-64 shrink-0 flex-col border-r-2 border-border bg-background px-4 py-6 lg:flex">
-        <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[27px] font-bold tracking-tight text-brand">
+        <Link href={homeHref as never} className="inline-flex items-center gap-[0.3em] mb-8 px-4 text-[27px] font-bold tracking-tight text-brand">
           <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
           Excelio
         </Link>
 
         <nav className="flex-1 space-y-1">
           {/* Profile sits at the very bottom of the sidebar instead, under the theme toggle. */}
-          {NAV_ITEMS.filter((item) => item.href !== PROFILE_HREF).map((item) => (
+          {navItems.filter((item) => item.label !== "Profile").map((item) => (
             <SidebarLink
-              key={item.href}
+              key={item.label}
               item={item}
               active={isActive(pathname, item)}
               badge={item.href === "/dashboard/notifications" ? unreadNotifications : 0}
             />
           ))}
-          <SidebarLink item={{ label: "More", href: "/dashboard/more", icon: More }} active={moreActive} />
+          <SidebarLink item={{ label: "More", href: moreHref, icon: More }} active={moreActive} />
         </nav>
 
         <button
@@ -170,7 +180,7 @@ export function ExcelDashboardShell({
       <div className="flex min-w-0 flex-1 flex-col pb-24 lg:pb-0">
         {/* Mobile top bar */}
         <header className="sticky top-[var(--announcement-h,0px)] z-30 flex h-14 items-center justify-between border-b-2 border-border bg-background px-4 lg:hidden">
-          <Link href="/dashboard" className="inline-flex items-center gap-[0.3em] text-[22px] font-bold tracking-tight text-brand">
+          <Link href={homeHref as never} className="inline-flex items-center gap-[0.3em] text-[22px] font-bold tracking-tight text-brand">
             <BrandLogo className="h-[1.4em] -rotate-[10deg]" />
             Excelio
           </Link>
@@ -194,10 +204,17 @@ export function ExcelDashboardShell({
                 <div className="flex h-10 items-start">
                   <StatRow stats={stats} />
                 </div>
-                <QuestsPanel stats={stats} />
+                <QuestsPanel stats={stats} viewAllHref={guest ? SIGNUP_HREF : "/dashboard/achievements"} />
                 <Panel data-tour="leaderboard-card" className="p-5">
                   <p className="text-lg font-semibold">Streak leaderboard</p>
-                  {leaders.length > 0 ? (
+                  {guest ? (
+                    <div className="mt-3 flex items-center gap-4">
+                      <IconTile tone="amber">
+                        <Ranking className="h-6 w-6" />
+                      </IconTile>
+                      <p className="text-[15px] text-muted-foreground">Create a free account to keep a streak and join the leaderboard.</p>
+                    </div>
+                  ) : leaders.length > 0 ? (
                     <LeaderList leaders={leaders} />
                   ) : (
                     <div className="mt-3 flex items-center gap-4">
@@ -209,14 +226,16 @@ export function ExcelDashboardShell({
                       </p>
                     </div>
                   )}
-                  <Link
-                    href="/dashboard/leaderboard"
-                    className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand"
-                  >
-                    View leaderboard <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  {!guest && (
+                    <Link
+                      href="/dashboard/leaderboard"
+                      className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand"
+                    >
+                      View leaderboard <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
                 </Panel>
-                {!pathname.startsWith("/dashboard/feedback") && <FeedbackInvite name={session?.user?.name} />}
+                {!guest && !pathname.startsWith("/dashboard/feedback") && <FeedbackInvite name={session.user.name} />}
               </div>
             </aside>
           )}
@@ -225,12 +244,12 @@ export function ExcelDashboardShell({
 
       {/* ── Bottom tab bar (mobile) ── */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t-2 border-border bg-background px-2 lg:hidden">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActive(pathname, item);
           const Icon = item.icon;
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href as never}
               data-tour-nav={item.href}
               aria-label={item.label}
@@ -249,7 +268,7 @@ export function ExcelDashboardShell({
           );
         })}
         <Link
-          href={"/dashboard/more" as never}
+          href={moreHref as never}
           data-tour-nav="/dashboard/more"
           aria-label="More"
           className={cn(
@@ -367,7 +386,7 @@ function StatRow({ stats }: { stats?: ShellStats }) {
   );
 }
 
-function QuestsPanel({ stats }: { stats?: ShellStats }) {
+function QuestsPanel({ stats, viewAllHref }: { stats?: ShellStats; viewAllHref: string }) {
   const goal = stats?.dailyGoalMinutes || 10;
   const quests = [
     { label: "Earn 10 XP", value: stats?.todayXp ?? 0, max: 10, icon: Zap, tone: "amber" as const },
@@ -378,7 +397,7 @@ function QuestsPanel({ stats }: { stats?: ShellStats }) {
     <Panel data-tour="quests" className="p-5">
       <div className="flex items-center justify-between">
         <p className="text-lg font-semibold">Daily quests</p>
-        <Link href="/dashboard/achievements" className="text-sm font-semibold text-brand">
+        <Link href={viewAllHref as never} className="text-sm font-semibold text-brand">
           View all
         </Link>
       </div>
