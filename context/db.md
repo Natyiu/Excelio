@@ -15,6 +15,7 @@ directory, and this repo uses that: one file per domain instead of one giant `sc
 |---|---|
 | `schema.prisma` | generator + datasource only, no models |
 | `app.prisma` | `AppSettings` |
+| `acquisition.prisma` | `UserAcquisition` (where a learner first came from) |
 | `auth.prisma` | `User`, `Session`, `Account`, `Verification` (better-auth's tables) |
 | `blog.prisma` | `Post` |
 | `feedback.prisma` | `Feedback` |

@@ -3,6 +3,7 @@
 import prisma from "@Batman/db";
 import { COURSES, getAllLessons } from "@/data/lessons";
 import { requireAdmin } from "@/lib/auth-guards";
+import { computeDropOff, type DropOffAttempt, type DropOffLesson, type DropOffResult } from "@/lib/drop-off";
 import { PRO_LIFETIME, PRO_MONTHLY, PRO_YEARLY } from "@/lib/plans";
 import { getChapterSettings, getProProducts } from "@/lib/pro-access";
 
@@ -20,7 +21,7 @@ export async function getFounderInsights() {
   const today = startOfDay(now);
   const since = (days: number) => new Date(today.getTime() - days * DAY);
 
-  const [totalUsers, newUsers7, signups30, activity30, completions, subs, profiles, products, settings, attemptsAll, attemptsWrong] =
+  const [totalUsers, newUsers7, signups30, activity30, completions, subs, profiles, products, settings, attemptsAll, attemptsWrong, acquisitions] =
     await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { createdAt: { gte: since(7) } } }),
@@ -39,6 +40,8 @@ export async function getFounderInsights() {
       getChapterSettings(),
       prisma.challengeAttempt.groupBy({ by: ["lessonId"], _count: { _all: true }, _sum: { hintCount: true } }),
       prisma.challengeAttempt.groupBy({ by: ["lessonId"], where: { isCorrect: false }, _count: { _all: true } }),
+      // Empty if the table hasn't been created yet
+      prisma.userAcquisition.findMany({ select: { userId: true, channel: true, source: true } }).catch(() => []),
     ]);
 
   // ── Active learners ──
@@ -159,6 +162,27 @@ export async function getFounderInsights() {
 
   const lessons7 = completions.filter((c) => c.completedAt && c.completedAt >= since(7)).length;
 
+  // ── Where learners come from ──
+  const bySource = new Map<string, { source: string; channel: string | null; signups: number; finishedLesson: number; pro: number }>();
+  for (const a of acquisitions) {
+    const row = bySource.get(a.source) ?? { source: a.source, channel: a.channel, signups: 0, finishedLesson: 0, pro: 0 };
+    row.signups++;
+    if (doneByUser.has(a.userId)) row.finishedLesson++;
+    if (proIds.has(a.userId)) row.pro++;
+    bySource.set(a.source, row);
+  }
+  const trackedRows = [...bySource.values()].sort((a, b) => b.signups - a.signups);
+  const sum = (key: "signups" | "finishedLesson" | "pro") => trackedRows.reduce((n, r) => n + r[key], 0);
+  // Everyone else signed up before tracking began, or had cookies blocked.
+  const unknownSource = {
+    source: "Unknown",
+    channel: null,
+    signups: totalUsers - sum("signups"),
+    finishedLesson: doneByUser.size - sum("finishedLesson"),
+    pro: proIds.size - sum("pro"),
+  };
+  const sources = unknownSource.signups > 0 ? [...trackedRows, unknownSource] : trackedRows;
+
   return {
     kpis: {
       totalUsers,
@@ -190,5 +214,96 @@ export async function getFounderInsights() {
     hardest,
     streaks,
     topLearners,
+    sources,
   };
+}
+
+export type UserDropOff = DropOffResult & {
+  userId: string;
+  name: string;
+  email: string;
+  signedUpAt: Date;
+  isPro: boolean;
+  /** Null if they signed up before tracking began, or had cookies blocked. */
+  cameFrom: { channel: string; source: string; campaign: string | null } | null;
+};
+
+/** Where each learner stopped, most recently active first. Admin accounts are left out. */
+export async function getUserDropOffs(): Promise<UserDropOff[]> {
+  await requireAdmin();
+  const now = new Date();
+
+  const [users, completions, attempts, xp, subs, settings, acquisitions] = await Promise.all([
+    prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, createdAt: true } }),
+    prisma.lessonProgress.findMany({
+      where: { status: { in: ["completed", "mastered"] } },
+      select: { userId: true, lessonId: true },
+    }),
+    prisma.challengeAttempt.findMany({
+      select: { userId: true, lessonId: true, challengeId: true, isCorrect: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.xpTransaction.groupBy({ by: ["userId"], _max: { createdAt: true } }),
+    prisma.subscription.findMany({ select: { userId: true, status: true, currentPeriodEnd: true } }),
+    getChapterSettings(),
+    // Empty if the table hasn't been created yet
+    prisma.userAcquisition.findMany({ select: { userId: true, channel: true, source: true, campaign: true } }).catch(() => []),
+  ]);
+  const cameFrom = new Map(acquisitions.map((a) => [a.userId, a]));
+
+  const lessons: DropOffLesson[] = COURSES.filter((c) => !settings[c.id]?.hidden).flatMap((c, i) =>
+    c.lessons.map((l) => ({
+      id: l.id,
+      title: l.title,
+      chapter: i + 1,
+      chapterTitle: c.title,
+      pro: settings[c.id]?.access === "pro",
+      stepIds: l.content.challenges.map((ch) => ch.id),
+    }))
+  );
+
+  const proIds = new Set(
+    subs
+      .filter((s) => s.status === "lifetime" || ((s.status === "active" || s.status === "trialing") && s.currentPeriodEnd > now))
+      .map((s) => s.userId)
+  );
+  const doneByUser = new Map<string, Set<string>>();
+  for (const c of completions) {
+    const set = doneByUser.get(c.userId) ?? new Set<string>();
+    set.add(c.lessonId);
+    doneByUser.set(c.userId, set);
+  }
+  const attemptsByUser = new Map<string, DropOffAttempt[]>();
+  for (const a of attempts) {
+    const list = attemptsByUser.get(a.userId) ?? [];
+    list.push(a);
+    attemptsByUser.set(a.userId, list);
+  }
+  const lastXp = new Map(xp.map((x) => [x.userId, x._max.createdAt]));
+
+  return users
+    .filter((u) => u.role !== "admin")
+    .map((u) => {
+      const userAttempts = attemptsByUser.get(u.id) ?? [];
+      const times = [userAttempts.at(-1)?.createdAt, lastXp.get(u.id)].flatMap((t) => (t ? [t.getTime()] : []));
+      const isPro = proIds.has(u.id);
+      return {
+        userId: u.id,
+        name: u.name,
+        email: u.email,
+        signedUpAt: u.createdAt,
+        isPro,
+        cameFrom: cameFrom.get(u.id) ?? null,
+        ...computeDropOff({
+          lessons,
+          completedLessonIds: doneByUser.get(u.id) ?? new Set(),
+          attempts: userAttempts,
+          isPro,
+          signedUpAt: u.createdAt,
+          lastActive: times.length ? new Date(Math.max(...times)) : null,
+          now,
+        }),
+      };
+    })
+    .sort((a, b) => (b.lastActive ?? b.signedUpAt).getTime() - (a.lastActive ?? a.signedUpAt).getTime());
 }

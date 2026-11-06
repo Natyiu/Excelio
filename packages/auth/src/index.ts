@@ -8,6 +8,7 @@ import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin, organization } from "better-auth/plugins";
 
 import { ac, admin, user } from "./permissions";
+import { saveAcquisition } from "./acquisition";
 import { notifyFirstAdmin, notifyPasswordChanged, notifyWelcome } from "./notifications";
 import { resolveSessionConfig } from "./session-config";
 import { getSettings } from "./settings-cache";
@@ -127,7 +128,12 @@ export const auth = betterAuth({
 
           return { data: _user };
         },
-        after: async (newUser) => {
+        after: async (newUser, ctx) => {
+          // Only people signing up themselves: an admin creating a user would pass on the admin's own source.
+          if (ctx?.path?.startsWith("/sign-up") || ctx?.path?.startsWith("/callback")) {
+            await saveAcquisition(newUser.id, ctx.headers?.get("cookie"));
+          }
+
           const settings = await getSettings();
           const count = await prisma.user.count();
           const isFirstUser = count === 1;

@@ -1,0 +1,14 @@
+// Where a learner first came from, saved once when they sign up.
+model UserAcquisition {
+  userId      String   @id
+  channel     String // direct, search, social, ai, paid, email, referral
+  source      String // e.g. Instagram, Google, someblog.com
+  campaign    String?
+  referrer    String?
+  landingPage String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_acquisition")
+}

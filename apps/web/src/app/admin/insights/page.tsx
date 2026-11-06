@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFounderInsights } from "@/lib/actions/insights";
+import { CHANNEL_LABEL, type Channel } from "@/lib/traffic-source";
 import { ActivityChart, FunnelChart, SignupsChart, StreakChart } from "./charts";
 
 export const dynamic = "force-dynamic";
@@ -85,6 +86,43 @@ export default async function AdminInsightsPage() {
         <ActivityChart data={data.daily} />
         <SignupsChart data={data.daily} />
       </div>
+
+      {/* Where learners come from */}
+      <section className="rounded-2xl p-4 bg-muted/50">
+        <p className="text-sm font-semibold">Where learners come from</p>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
+          The source of each person&apos;s first visit. Unknown means they signed up before tracking began, or had cookies blocked. See each person on{" "}
+          <Link href={"/admin/drop-off" as never} className="underline underline-offset-4">Drop-off</Link>.
+        </p>
+        {data.sources.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">No learners yet.</p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
+              <thead className="text-left text-[13px] text-muted-foreground">
+                <tr>
+                  <th className="pb-2 font-medium">Source</th>
+                  <th className="pb-2 font-medium">Type</th>
+                  <th className="pb-2 text-right font-medium">Signups</th>
+                  <th className="pb-2 text-right font-medium">Finished a lesson</th>
+                  <th className="pb-2 text-right font-medium">Pro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {data.sources.map((s) => (
+                  <tr key={s.source} className={s.channel ? "" : "text-muted-foreground"}>
+                    <td className="py-2 pr-2">{s.source}</td>
+                    <td className="py-2 pr-2">{s.channel ? CHANNEL_LABEL[s.channel as Channel] : "–"}</td>
+                    <td className="py-2 text-right tabular-nums">{s.signups}</td>
+                    <td className="py-2 text-right tabular-nums">{s.finishedLesson}</td>
+                    <td className="py-2 text-right tabular-nums">{s.pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Paywall */}
       <section className="rounded-2xl p-4 bg-muted/50">

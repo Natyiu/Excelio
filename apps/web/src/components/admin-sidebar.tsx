@@ -10,6 +10,7 @@ import { useMounted } from "@/lib/use-mounted";
 import {
   DashboardSquare01Icon as LayoutDashboard,
   UserGroupIcon as Users,
+  UserRemove01Icon as DropOff,
   Notification01Icon as Bell,
   Settings02Icon as Settings2,
   ToggleOnIcon as ToggleRight,
@@ -126,6 +127,7 @@ const adminGroups: { title: string; items: NavItem[] }[] = [
     title: "People",
     items: [
       { name: "Users", href: "/admin/users", icon: Users, badge: "users" },
+      { name: "Drop-off", href: "/admin/drop-off", icon: DropOff },
       { name: "Rivals", href: "/admin/rivals", icon: Ranking },
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
       { name: "Announcements", href: "/admin/announcements", icon: Megaphone },

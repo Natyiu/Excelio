@@ -17,6 +17,7 @@ model User {
   posts               Post[]
   sessions            Session[]
   subscription        Subscription?
+  acquisition         UserAcquisition?
 
   // Excel Learning Platform
   userProfile              UserProfile?
