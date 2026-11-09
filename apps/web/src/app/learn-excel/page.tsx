@@ -8,14 +8,14 @@ import { GuideCta } from "./guide-parts";
 
 export const revalidate = 3600;
 
-const TITLE = "Learn Excel: Free Guide to Formulas and Functions | Excelio";
+const TITLE = "Excel Tutorial: Learn Formulas, Functions and Data Analysis | Excelio";
 const DESCRIPTION = "A chapter-by-chapter Excel guide, from your first cell to XLOOKUP, dynamic arrays and LAMBDA, with clear explanations and worked formula examples.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: GUIDE_PATH },
-  openGraph: { title: TITLE, description: DESCRIPTION, type: "website", url: GUIDE_PATH, siteName: "Excelio" },
+  openGraph: { title: TITLE, description: DESCRIPTION, type: "website", url: GUIDE_PATH, siteName: "Excelio", images: ["/opengraph-image"] },
 };
 
 export default async function ExcelGuidePage() {
@@ -34,8 +34,11 @@ export default async function ExcelGuidePage() {
     <div className="space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) }} />
       <header>
-        <h1 className="text-4xl font-extrabold tracking-tight">Learn Excel: the free guide</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight">Excel tutorial: learn Excel step by step</h1>
         <p className="mt-3 text-lg text-muted-foreground">{DESCRIPTION}</p>
+        <p className="mt-3 text-[17px]">
+          Working with real data? Start with <Link href={"/excel-data-analysis" as never} className="font-semibold text-brand hover:underline">how to analyze data in Excel</Link>.
+        </p>
       </header>
 
       {LEVELS.map((level) => {

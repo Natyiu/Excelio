@@ -20,6 +20,9 @@ export function slugify(title: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** A chapter's search title, without saying "Excel" twice: "Rounding" becomes "Excel Rounding Tutorial". */
+export const chapterTitle = (title: string) => `${/\bexcel\b/i.test(title) ? title : `Excel ${title}`} Tutorial | Excelio`;
+
 const wordCount = (text: string | undefined) => (text ?? "").split(/\s+/).filter(Boolean).length;
 
 /**

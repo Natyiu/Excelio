@@ -210,7 +210,7 @@ const FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] 
   {
     title: "Resources",
     links: [
-      { label: "Blog", href: "/blog" },
+      { label: "Excel data analysis", href: "/excel-data-analysis" },
       { label: "FAQ", href: "#faq" },
     ],
   },

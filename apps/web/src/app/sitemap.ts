@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, priority: 1 },
     { url: `${SITE_URL}${GUIDE_PATH}`, priority: 0.9 },
+    { url: `${SITE_URL}/excel-data-analysis`, priority: 0.8 },
     ...guide.map((c) => ({ url: `${SITE_URL}${c.href}`, priority: 0.7 })),
     ...guide.flatMap((c) => c.lessons.flatMap((l) => (l.href ? [{ url: `${SITE_URL}${l.href}`, priority: 0.7 }] : []))),
     { url: `${SITE_URL}/start`, priority: 0.8 },
@@ -24,7 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pricing`, priority: 0.7 },
     // An empty blog isn't worth a crawler's visit.
     ...(posts.length ? [{ url: `${SITE_URL}/blog`, priority: 0.7 }] : []),
-    { url: `${SITE_URL}/signup`, priority: 0.5 },
     { url: `${SITE_URL}/legal/privacy`, priority: 0.2 },
     { url: `${SITE_URL}/legal/terms`, priority: 0.2 },
   ];

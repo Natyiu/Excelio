@@ -25,9 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { chapter, lesson } = await params;
   const found = await findLesson(chapter, lesson);
   if (!found) return {};
-  const title = `${found.lesson.data.title} in Excel | Excelio`;
+  const title = `${found.lesson.data.title}: Excel Tutorial | Excelio`;
   const description = found.lesson.data.description;
-  return { title, description, alternates: { canonical: found.lesson.href! }, openGraph: { title, description, type: "article", url: found.lesson.href!, siteName: "Excelio" } };
+  return { title, description, alternates: { canonical: found.lesson.href! }, openGraph: { title, description, type: "article", url: found.lesson.href!, siteName: "Excelio", images: ["/opengraph-image"] } };
 }
 
 export default async function GuideLessonPage({ params }: Props) {

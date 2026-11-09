@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buildGuide, GUIDE_PATH, jsonLd } from "@/lib/excel-guide";
+import { buildGuide, chapterTitle, GUIDE_PATH, jsonLd } from "@/lib/excel-guide";
 import { getChapterSettings } from "@/lib/pro-access";
 import { Crumbs, GuideCta, breadcrumbSchema } from "../guide-parts";
 
@@ -16,8 +16,8 @@ async function findChapter(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const chapter = await findChapter((await params).chapter);
   if (!chapter) return {};
-  const title = `${chapter.course.title} in Excel: Chapter ${chapter.number} | Excelio`;
-  return { title, description: chapter.course.description, alternates: { canonical: chapter.href }, openGraph: { title, description: chapter.course.description, type: "article", url: chapter.href, siteName: "Excelio" } };
+  const title = chapterTitle(chapter.course.title);
+  return { title, description: chapter.course.description, alternates: { canonical: chapter.href }, openGraph: { title, description: chapter.course.description, type: "article", url: chapter.href, siteName: "Excelio", images: ["/opengraph-image"] } };
 }
 
 export default async function GuideChapterPage({ params }: Props) {
