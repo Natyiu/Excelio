@@ -25,6 +25,7 @@ export default function ExcelGuideLayout({ children }: { children: React.ReactNo
       <footer className="border-t-2 border-border py-6">
         <div className="mx-auto flex max-w-3xl flex-wrap justify-center gap-x-4 gap-y-1 px-4 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">Excelio</Link>
+          <Link href={"/article" as never} className="hover:text-foreground">Articles</Link>
           <Link href={"/excel-data-analysis" as never} className="hover:text-foreground">Data analysis</Link>
           <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link href="/legal/privacy" className="hover:text-foreground">Privacy</Link>
