@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import prisma from "@Batman/db";
-import { FUNCTION_ARTICLES, ARTICLES_PATH } from "@/data/function-articles";
+import { FUNCTION_ARTICLES, ARTICLES_PATH, findFunctionArticle } from "@/data/function-articles";
 import { buildGuide, GUIDE_PATH } from "@/lib/excel-guide";
 import { getChapterSettings } from "@/lib/pro-access";
 import { SITE_URL } from "@/lib/site-url";
@@ -26,10 +26,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/start`, priority: 0.8 },
     { url: `${SITE_URL}/try`, priority: 0.8 },
     { url: `${SITE_URL}/pricing`, priority: 0.7 },
-    // An empty blog isn't worth a crawler's visit.
-    ...(posts.length ? [{ url: `${SITE_URL}/blog`, priority: 0.7 }] : []),
     { url: `${SITE_URL}/legal/privacy`, priority: 0.2 },
     { url: `${SITE_URL}/legal/terms`, priority: 0.2 },
   ];
-  return [...pages, ...posts.map((p) => ({ url: `${SITE_URL}/blog/${p.slug}`, lastModified: p.updatedAt, priority: 0.6 }))];
+  return [...pages, ...posts.filter((p) => !findFunctionArticle(p.slug)).map((p) => ({ url: `${SITE_URL}/blog/${p.slug}`, lastModified: p.updatedAt, priority: 0.6 }))];
 }

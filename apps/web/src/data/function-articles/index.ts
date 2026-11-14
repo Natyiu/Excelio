@@ -5,7 +5,7 @@ import { BATCH_04 } from "./batch-04";
 import { BATCH_05 } from "./batch-05";
 import type { FunctionArticle } from "./types";
 
-export const ARTICLES_PATH = "/article";
+export const ARTICLES_PATH = "/blog";
 
 /** Articles go public in groups so we can watch how Google treats each one. Raise this to release the next group. */
 export const RELEASED_BATCHES = 1;
