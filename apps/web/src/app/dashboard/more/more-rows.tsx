@@ -6,11 +6,18 @@ import {
   PaintBoardIcon as Paint,
   UserCircleIcon as Account,
   MessageAdd01Icon as Feedback,
+  Note01Icon as CheatSheet,
 } from "@hugeicons/react";
 
-export type MoreRow = { label: string; hint: string; href: string; icon: ComponentType<{ className?: string }>; colour: string };
+export type MoreRow = { label: string; hint: string; href: string; /** Where a guest goes instead. */ guestHref?: string; icon: ComponentType<{ className?: string }>; colour: string };
 
 export const MORE_GROUPS: { title: string; rows: MoreRow[] }[] = [
+  {
+    title: "Reference",
+    rows: [
+      { label: "Cheat sheet", hint: "Every formula and keyboard shortcut", href: "/dashboard/cheat-sheet", guestHref: "/start/cheat-sheet", icon: CheatSheet, colour: "#0284c7" },
+    ],
+  },
   {
     title: "Account",
     rows: [
@@ -27,10 +34,10 @@ export const MORE_GROUPS: { title: string; rows: MoreRow[] }[] = [
   },
 ];
 
-export function SettingRow({ row }: { row: MoreRow }) {
+export function SettingRow({ row, guest = false }: { row: MoreRow; guest?: boolean }) {
   const Icon = row.icon;
   return (
-    <Link href={row.href as never} className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50">
+    <Link href={((guest && row.guestHref) || row.href) as never} className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: row.colour, boxShadow: `0 3px 0 color-mix(in oklab, ${row.colour} 60%, black)` }}>
         <Icon className="h-5 w-5" />
       </span>

@@ -25,6 +25,7 @@ import {
   Sun03Icon as Sun,
   Clock01Icon as Clock,
   ArrowRight01Icon as ArrowRight,
+  Note01Icon as CheatSheetIcon,
 } from "@hugeicons/react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Learn", href: "/dashboard", icon: Home, match: ["/dashboard/learn"] },
   { label: "Practice", href: "/dashboard/practice", icon: Sandbox },
   { label: "Challenge", href: "/dashboard/daily-challenge", icon: Target },
+  { label: "Cheat sheet", href: "/dashboard/cheat-sheet", icon: CheatSheetIcon },
   { label: "Leaderboard", href: "/dashboard/leaderboard", icon: Ranking },
   { label: "Achievements", href: "/dashboard/achievements", icon: Award },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
@@ -56,6 +58,7 @@ const GUEST_HREFS: Record<string, string> = {
   Learn: "/start",
   Practice: "/start/practice",
   Challenge: "/start/challenge",
+  "Cheat sheet": "/start/cheat-sheet",
   Leaderboard: "/start/leaderboard",
   Achievements: "/start/achievements",
   Notifications: "/start/notifications",
@@ -250,7 +253,8 @@ export function ExcelDashboardShell({
 
       {/* ── Bottom tab bar (mobile) ── */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t-2 border-border bg-background px-2 lg:hidden">
-        {navItems.map((item) => {
+        {/* The bar is full, so on phones the cheat sheet is reached from More. */}
+        {navItems.filter((item) => item.label !== "Cheat sheet").map((item) => {
           const active = isActive(pathname, item);
           const Icon = item.icon;
           return (

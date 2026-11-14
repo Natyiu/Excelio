@@ -22,7 +22,7 @@ export default function GuestMorePage() {
           <SectionTitle>{g.title}</SectionTitle>
           <Panel className="divide-y-2 divide-border overflow-hidden">
             {g.rows.map((r) => (
-              <SettingRow key={r.href} row={r} />
+              <SettingRow key={r.href} row={r} guest />
             ))}
             {g.title === "Help" && <ReplayTourRow />}
           </Panel>
