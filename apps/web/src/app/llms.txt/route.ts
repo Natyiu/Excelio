@@ -1,3 +1,4 @@
+import { ARTICLES_PATH } from "@/data/function-articles";
 import { buildGuide, GUIDE_PATH } from "@/lib/excel-guide";
 import { getChapterSettings } from "@/lib/pro-access";
 import { SITE_URL } from "@/lib/site-url";
@@ -19,6 +20,10 @@ export async function GET() {
     `- [Free Excel guide](${url(GUIDE_PATH)}): the course, chapter by chapter`,
     `- [Pricing](${url("/pricing")}): free and Pro plans`,
     `- [Try the first lesson](${url("/try")}): no account needed`,
+    `- [Excel practice exercises](${url("/excel-practice")}): free problems solved in a live sheet, checked instantly`,
+    `- [Free Excel test](${url("/excel-test")}): scored formula tasks from SUM to XLOOKUP, no sign-up`,
+    `- [Excel keyboard shortcuts](${url("/excel-shortcuts")}): Windows and Mac keys side by side`,
+    `- [Excel function guides](${url(ARTICLES_PATH)}): each function with examples and a practice exercise`,
     "",
     "## Chapters",
     ...guide.map((c) => `- [${c.course.title}](${url(c.href)}): ${c.course.description}`),

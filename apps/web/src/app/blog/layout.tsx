@@ -22,6 +22,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       <footer className="border-t-2 border-border py-6">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-4 gap-y-1 px-4 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">Excelio</Link>
+          <Link href={"/excel-practice" as never} className="hover:text-foreground">Practice</Link>
+          <Link href={"/excel-test" as never} className="hover:text-foreground">Excel test</Link>
+          <Link href={"/excel-shortcuts" as never} className="hover:text-foreground">Shortcuts</Link>
           <Link href={"/excel-data-analysis" as never} className="hover:text-foreground">Data analysis</Link>
           <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link href="/legal/privacy" className="hover:text-foreground">Privacy</Link>

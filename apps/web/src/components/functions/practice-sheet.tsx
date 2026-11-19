@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { pressable } from "@/components/game-ui";
 import { Mascot } from "@/components/mascot";
 import { cellId, formatCellValue, parseCellInput, parseCellRef, recalcSheet } from "@/lib/formula-engine";
@@ -16,10 +16,13 @@ type Props = {
   requires: string[];
   hint: string;
   solution: string;
+  /** Called after each check, so a page with several sheets can keep score. */
+  onCheck?: (ok: boolean) => void;
 };
 
 /** A small live sheet: the learner types one formula, sees it calculate, and has it checked. */
-export function PracticeSheet({ data, target, expected, requires, hint, solution }: Props) {
+export function PracticeSheet({ data, target, expected, requires, hint, solution, onCheck }: Props) {
+  const inputId = useId();
   const [formula, setFormula] = useState("");
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [help, setHelp] = useState<"hint" | "solution" | null>(null);
@@ -48,15 +51,16 @@ export function PracticeSheet({ data, target, expected, requires, hint, solution
       cells
     );
     setResult({ ok: outcome.isCorrect, message: outcome.isCorrect ? "Correct. That formula works in Excel too." : outcome.message });
+    onCheck?.(outcome.isCorrect);
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 rounded-2xl border-2 border-border bg-card px-3 py-2.5">
         <span aria-hidden className="font-serif italic text-muted-foreground">fx</span>
-        <label htmlFor="practice-formula" className="shrink-0 font-mono text-sm font-bold text-brand">{target}</label>
+        <label htmlFor={inputId} className="shrink-0 font-mono text-sm font-bold text-brand">{target}</label>
         <input
-          id="practice-formula"
+          id={inputId}
           value={formula}
           onChange={(e) => { setFormula(e.target.value); setResult(null); }}
           onKeyDown={(e) => { if (e.key === "Enter") check(); }}

@@ -31,7 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const title = titleOf(a);
   const url = `${ARTICLES_PATH}/${a.slug}`;
-  return { title, description: a.answer, alternates: { canonical: url }, openGraph: { title, description: a.answer, type: "article", url, siteName: "Excelio", images: ["/opengraph-image"] } };
+  const description = `${a.answer} With worked examples and a free practice exercise.`;
+  return { title, description, alternates: { canonical: url }, openGraph: { title, description, type: "article", url, siteName: "Excelio", images: ["/opengraph-image"] } };
 }
 
 function Section({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
@@ -151,6 +152,8 @@ export default async function FunctionArticlePage({ params }: Props) {
         <span className="text-muted-foreground">Next:</span>
         {related.map((r) => <Link key={r.slug} href={`${ARTICLES_PATH}/${r.slug}` as never} className="font-mono text-brand hover:underline">{r.name}</Link>)}
         <Link href={`${GUIDE_PATH}/${a.chapter}` as never} className="text-brand hover:underline">Chapter guide</Link>
+        <Link href={"/excel-practice" as never} className="text-brand hover:underline">More exercises</Link>
+        <Link href={"/excel-test" as never} className="text-brand hover:underline">Take the Excel test</Link>
       </nav>
     </article>
   );
