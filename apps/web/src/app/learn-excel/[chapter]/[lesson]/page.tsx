@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Clock01Icon as Clock, FlashIcon as Zap } from "@hugeicons/react";
+import { chapterColour } from "@/components/learning-path";
 import { RichText } from "@/components/learning/lesson-notes";
 import { buildGuide, GUIDE_PATH, jsonLd } from "@/lib/excel-guide";
 import { getChapterSettings } from "@/lib/pro-access";
 import { SITE_URL } from "@/lib/site-url";
-import { Crumbs, GuideCta, GuideNotes, breadcrumbSchema } from "../../guide-parts";
+import { Crumbs, GuideCta, GuideNotes, InlineCta, breadcrumbSchema } from "../../guide-parts";
 
 export const revalidate = 3600;
 
@@ -55,13 +57,22 @@ export default async function GuideLessonPage({ params }: Props) {
   };
 
   return (
-    <article className="space-y-8">
+    <article className="space-y-8" style={chapterColour(chapter.number - 1)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd([breadcrumbSchema(crumbs), schema]) }} />
       <header>
         <Crumbs items={crumbs} />
-        <h1 className="text-4xl font-extrabold tracking-tight">{data.title}</h1>
+        <p className="text-sm font-bold uppercase tracking-wide text-brand">Chapter {chapter.number} · {chapter.course.title}</p>
+        <h1 className="mt-1 text-4xl font-extrabold tracking-tight">{data.title}</h1>
         <p className="mt-3 text-lg text-muted-foreground">{data.description}</p>
+        <p className="mt-4 flex flex-wrap gap-2 text-[13px] font-bold">
+          <span className="flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-brand"><Clock className="h-4 w-4" /> {data.estimatedMinutes} min</span>
+          {data.content.challenges.length > 0 && (
+            <span className="flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-brand"><Zap className="h-4 w-4" /> {data.content.challenges.length} hands-on tasks</span>
+          )}
+        </p>
       </header>
+
+      <InlineCta text={`Learn "${data.title}" by doing it: a live spreadsheet that checks your answers.`} label="Try this lesson" />
 
       <GuideNotes text={data.content.conceptOverview ?? ""} />
 

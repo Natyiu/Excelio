@@ -215,7 +215,7 @@ function ChapterBanner({
  * 3D perspective with a faded sheet behind it and two floating cards, all
  * fading into the banner colour so it reads as backdrop, not content.
  */
-function SheetArt({ formula }: { formula: string }) {
+export function SheetArt({ formula }: { formula: string }) {
   const rows = [
     ["Product", "Sales", "Region"],
     ["Laptop", "1,200", "North"],
@@ -299,7 +299,7 @@ const CHAPTER_COLOURS = [
   { base: "#d97706", deep: "#92400e" }, // amber
 ];
 
-function chapterColour(index: number): CSSProperties {
+export function chapterColour(index: number): CSSProperties {
   const c = CHAPTER_COLOURS[index % CHAPTER_COLOURS.length]!;
   return {
     "--brand": c.base,

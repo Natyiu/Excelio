@@ -592,3 +592,15 @@
     animation: none !important;
   }
 }
+
+/* A soft ring that pulses out of a call-to-action button, so the eye lands on it. */
+@keyframes cta-glow {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 45%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 12px transparent; }
+}
+.cta-glow {
+  animation: cta-glow 2.2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-glow { animation: none; }
+}
